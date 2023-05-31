@@ -1,0 +1,121 @@
+\section{Floating-point numbers}
+Nowadays, most computers use the IEEE format for representing floating-point numbers.
+The two main types you will encounter are single-precision reals, occupying four
+bytes of memory, and double-precision reals, occupying eight bytes. Fortran of old,
+including FORTRAN, favours single-precision -- without any decoration a literal
+number like \verb+1.23456789+ is single-precision, whereas many other languages
+use double-precision reals by default.
+
+Back in the days before the IEEE standard reals \cite{IEEE} were represented in many different ways
+and also the arithmetic operations we normally take for granted were not fully portable.
+This led to all manner of complications if you wanted to make your program portable, and
+that was and is certainly a goal of Fortran.
+
+\subsection{REAL*4 and REAL*8}
+One of the many extensions that were added by compiler vendors was the use of an asterisk~(*)
+to indicate the precision:
+\begin{verbatim}
+*
+*     Single precision real
+*
+      real*4 x
+*
+*     Double precision real
+*
+      real*8 y
+*
+*     Single precision complex
+*
+      complex*8 z
+\end{verbatim}
+The number indicates the number of bytes that a real would occupy. This has never been
+part of a FORTRAN or Fortran standard. The \emph{kind} feature in Fortran is much more
+flexible, as it can capture aspects of the representation of floating-point numbers
+beyond mere storage.\footnote{The current standard defines a general model for representing
+real numbers. This encompasses the IEEE formats, but is in fact more general.}
+
+\begin{quote}
+\emph{Note:} I have used a Convex computer in the distant past that actually had two
+different types of floating-point numbers that both were single-precision. One was
+structured according to the IEEE standard and the other was a native format. The difference
+for all intents and purposes was the interpretation of the exponent. The native format
+was said to be a bit faster, but they occupied the same storage, four bytes.
+
+For the same bit pattern the \emph{values} differed by a factor~4.
+\end{quote}
+
+\subsection{Literals in the source code}
+One thing to keep in mind: if a literal number occurs in the source code, it is interpreted
+as it appears, independent of the context. For Fortran this has been standardised: an expression
+on the right-hand side is evaluated independently of the left-hand side. More concretely:
+\begin{verbatim}
+    double precision pi = 3.14159265358979323846264338327950288419716939937510
+\end{verbatim}
+\noindent may look to specify $\pi$ in some 50 decimals, but to the compiler it is
+merely a slightly bizarre way of expressing it in \emph{single-precision}, so actually
+only six or seven significant decimals. To get \emph{double-precision}, you need to
+add a \emph{kind} or, as it was in FORTRAN, a "d" exponent (with some excess decimals removed):
+\begin{verbatim}
+    double precision pi = 3.141592653589793238462643d0
+\end{verbatim}
+
+You can see the difference if you run this program:
+\begin{verbatim}
+program diff_double_precision
+    implicit none
+
+    double precision, parameter :: pi_1 = 3.141592653589793238462643
+    double precision, parameter :: pi_2 = 3.141592653589793238462643d0
+
+    write(*,*) 'Difference: ', pi_1 - pi_2
+end program diff_double_precision
+\end{verbatim}
+\noindent which prints (you may expect slight differences in the last few decimals with
+different compilers):
+\begin{verbatim}
+ Difference:    8.7422780126189537E-008
+\end{verbatim}
+
+Some old FORTRAN compilers seem to have been less strict about the dichotomy between
+the left-hand side and the right-hand side and would indeed interpret such literal
+numbers as double-precision.
+
+Another thing to keep in mind is that many compilers, both new and old, allow for
+compiler options that turn the \emph{default} precision for a variable declared as \verb+real+
+into \emph{double precision}. If a program relies on this behaviour, then you need to
+carefully check the code.
+
+\subsection{Input in the absence of a decimal point}
+Disk storage nowadays is all but endless, but this luxury did not exist in the old days.
+This may have been the reason for a little known or used feature in input of real numbers:
+if a string representing a real number does not contain a decimal point, then the \emph{input~format}
+may insert it.
+
+Here is an example, using internal I/O to make it self-contained (see also the file \verb+input_no_point.f90+):
+\begin{verbatim}
+program show_insert_point
+    implicit none
+
+    real :: x
+    character(len=10) :: string
+
+    string = '1234'
+
+    read( string, '(f4.0)' ) x
+    write(*,*) x
+
+    read( string, '(f4.2)' ) x
+    write(*,*) x
+end program show_insert_point
+\end{verbatim}
+It produces:
+\begin{verbatim}
+   1234.00000
+   12.3400002
+\end{verbatim}
+With the format in the second read statement a decimal point is inserted!
+
+It may have been useful in the past but it does suggest that to avoid surprises, you better not
+use input format with a prescribed number of decimals.
+
+
