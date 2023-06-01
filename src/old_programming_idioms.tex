@@ -8,7 +8,7 @@
 \maketitle
 
 \section{Introduction}
-In the more than 60 years of its existence up to now the Fortran programming
+In the more than 60 years of its existence the Fortran programming
 language has undergone many changes, both in accordance with general insights
 in programming paradigms and in reaction to developments in computer hardware.
 This document discusses some of the idioms one finds in old FORTRAN packages
@@ -34,7 +34,6 @@ related topics.
 \begin{verbatim}
 - array(*) versus array(:)
 - array(10) as the starting point
-- COMMON blocks and BLOCK DATA, named and blank COMMON
 - history of computers:
    - hardware
    - memory management
@@ -55,6 +54,7 @@ related topics.
 - real do-variables
 - entry
 - SAVE-attribute and SAVE as compiler property
+- SAVE compiler option
 - ASSIGN
 - arithmetic IF
 - computed GOTO
@@ -66,12 +66,18 @@ related topics.
 - double complex
 - unformatted versus binary files
 - list-directed input and output - also: /
-- narrow formats
-- input formats with decimals - F5.1 and there is no decimal point in
-  the input
-- double precision :: x = 1.01 not the same as double precision :: x = 1.01d0
+- narrow formats (?)
 - use of d00 in input
+- Cray pointers
+- uppercase/lowercase letters
+- D as comment character
+- external, also notation "*tan"
+- FORTRAN 66 aka FORTRAN IV
+- FORTRAN 66 semantics: OPEN - STATUS = 'NEW' as default.
+- Effect of BLANK = 'ZERO' versus BLANK = 'NULL'
 \end{verbatim}
 
+
+References to be added: IEEE 754 and Fortran 90 standard.
 
 \end{document}

@@ -6,10 +6,10 @@ including FORTRAN, favours single-precision -- without any decoration a literal
 number like \verb+1.23456789+ is single-precision, whereas many other languages
 use double-precision reals by default.
 
-Back in the days before the IEEE standard reals \cite{IEEE} were represented in many different ways
-and also the arithmetic operations we normally take for granted were not fully portable.
-This led to all manner of complications if you wanted to make your program portable, and
-that was and is certainly a goal of Fortran.
+Back in the days before the IEEE standard was widely adopted \cite(IEEE}, reals were
+represented in many different ways and also the arithmetic operations we normally take
+for granted were not fully portable. This led to all manner of complications if
+you wanted to make your program portable, and that was and is certainly a goal of Fortran.
 
 \subsection{REAL*4 and REAL*8}
 One of the many extensions that were added by compiler vendors was the use of an asterisk~(*)
@@ -33,6 +33,11 @@ part of a FORTRAN or Fortran standard. The \emph{kind} feature in Fortran is muc
 flexible, as it can capture aspects of the representation of floating-point numbers
 beyond mere storage.\footnote{The current standard defines a general model for representing
 real numbers. This encompasses the IEEE formats, but is in fact more general.}
+
+\begin{quote}
+\emph{Note:} Such notation is sometimes used for integers and logicals as well. Again
+the \emph{kind} feature is much more useful than merely indicating the storage size.
+\end{quote}
 
 \begin{quote}
 \emph{Note:} I have used a Convex computer in the distant past that actually had two

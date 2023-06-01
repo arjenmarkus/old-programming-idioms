@@ -44,7 +44,7 @@ to, say, \verb+1.1+ in subroutine \verb+SUB1+, then on the next call to subrouti
 \verb+SUB2+, the array element \verb+A(1)+ will have that same value, as they occupy
 the same memory location.
 
-\verb+COMMON+ blocks should have the same size in all locations in the program's
+\verb+COMMON+ blocks should have the same \emph{size} in all locations in the program's
 code where they occur. That is difficult to ensure, hence it was common (no pun intended)
 to put the declaration of \verb+COMMON+ blocks in so-called include files. Each program
 unit that needed to address the memory allocated via these \verb+COMMON+ blocks could
@@ -66,9 +66,17 @@ these options do not need to be passed around via the argument list.
 \item
 Together with \verb+EQUIVALENCE+ statements you could use the \verb+COMMON+ blocks
 to share workspace. Remember: back in the days memory was much and much more precious
-and scarce than it is now. So, defining work arrays \verb+WORK+ (of type real)
+and scarcer than it is now. So, defining work arrays \verb+WORK+ (of type real)
 and \verb+IWORK+ (of type integer) and making them equivalent to each other, you
 could save on memory, if these arrays are not used at the same time.
+
+In the code that would look like:
+\begin{verbatim}
+      COMMON /ABC/ WORK(1000)
+      EQUIVALENCE (WORK(1), IWORK(1))
+\end{verbatim}
+\noindent with a typical sloppiness with respect to array dimensions.
+
 \end{itemize}
 Nowadays, it is much easier to pass large amounts of essentially private data
 around, simply define a suitable derived type. Also, it is easy to allocate
@@ -78,7 +86,11 @@ A special \verb+COMMON+ block was the so-called \emph{blank} \verb+COMMON+
 block. It had no name and it did not have to be declared with the same size
 in all parts of the program. In fact, on some systems it could be used as
 a flexible reservoir of memory, in much the same way as you have the
-heap nowadays. But this facility was an extension to the standard.
+heap nowadays. But this particular use was an extension to the standard.
+
+
+\subsection{More on EQUIVALENCE}
+TODO
 
 
 \subsection{The SAVE statement}
@@ -155,7 +167,7 @@ before, so that no initialisation is needed anymore:
       TOTAL = TOTAL + X
       END
 \end{verbatim}
-(JUst a variation on the previous example). This is not a very interesting routine,
+(Just a variation on the previous example). This is not a very interesting routine,
 but it illustrates a typical use.
 
 \emph{To emphasize:} This type of initialisation is done so that the variables
@@ -177,7 +189,7 @@ There is some peculiar syntax involved:
 \end{verbatim}
 
 You can repeat values in much the same way as with edit descriptors
-in format statements: a count followed by an asterisk ("*") and the value
+in format statements: a count followed by an asterisk (*) and the value
 to be repeated. It is also possible to use implied do-loops:
 %
 \begin{verbatim}
@@ -208,14 +220,40 @@ not necessary to set the values for an array in one single statement:
 So, this old-fashioned statement may have its uses still.
 
 Another peculiarity: the \verb+DATA+ statement has effect on the
-size of the object file:
+size of the object file and thus the executable itself. The following
+program leads to an executable of approximately 5.7 MB using gfortran
+on Windows:
+\begin{verbatim}
+program data_stmt
+    implicit none
 
-TODO
+    integer :: i
+    real    :: array(1000000)
+
+    data (array(i), i = 1,size(array),2) / 500000*1.0 /
+   data (array(i), i = 2,size(array),2) / 500000*2.0 /
+
+    !
+    ! Alternative
+    !
+    !! array(1::2) = 1.0
+    !! array(2::2) = 2.0
+    !
+
+    write(*,*) sum(array)
+end program data_stmt
+\end{verbatim}
+
+If, instead, you use the alternative and remove the \verb+DATA+
+statements, the executable is only 1.7 MB. Of course, this is
+an exaggerated example, but it illustrates that such \verb+DATA+
+statements are very different in character than ordinary, executable
+statements.
 
 
 \subsection{Initialising variables in COMMON blocks: BLOCK DATA}
 The \verb+DATA+ statement plays an important role when it comes to initialising
-variables in a \verb+COMMON+ block. Since the \verb+COMMON+ blocks may
+variables in a \verb+COMMON+ block. Since the \verb+COMMON+ blocks usually
 appear in more than one subprogram (main program, subroutines, functions),
 they cannot be initialised in the same way as ordinary variables: which
 \verb+DATA+ statement should prevail, if several initialise the same
@@ -224,7 +262,8 @@ they cannot be initialised in the same way as ordinary variables: which
 Thus enter the \verb+BLOCK DATA+ program unit!
 
 It is the only way to initialise variables in a \verb+COMMON+ block and
-it is special, because it is not executable. The peculiar consequence is
+it is special, because it is not executable and is not part of a routine
+or the main program. The peculiar consequence is
 that you cannot put it in a library: there is no reference to it, unlike
 with subroutines and functions, so it would never be loaded. Instead, you
 will normally put in the same file as the main program or link against
@@ -245,7 +284,6 @@ And since most if not all FORTRAN features are still supported in Fortran,
 I also use free-form sources.}
 %
 \begin{verbatim}
-gfortran -c block.f90
 gfortran -o common1 common.f90 block.f90
 gfortran -o common2 common.f90
 \end{verbatim}
@@ -343,3 +381,10 @@ simplified:\footnote{Intentionally left in fixed form.}
 \end{verbatim}
 %
 \noindent provided the interface is made explicit via a module or an interface block.
+
+\begin{quote}
+The careful reader wil note that one feature of the original interface
+has not been retained in the simplification: \verb+NHRS+. Thus, with this
+revised interface the array \verb+B+ should consist entirely of right-hand
+side vectors.
+\end{quote}
