@@ -9,4 +9,222 @@ Simulated do-while
 Jumping out of a do-loop
 \item
 IF-constructions, including "select-case"
+\item
+ASSIGN statement
+\item
+Computed GOTO
+\item
+Three-way IF
 \end{itemize}
+
+FORTRAN came with a small number of control constructs and it was quite usual to construct
+other control flows via \verb+IF+ and \verb+GOTO+ statements. It inherited some constructs
+from its predecessors that are very uncommon nowadays: the three=way \verb+IF+ and the
+computed \verb+GOTO+, as well as the \verb+ASSIGN+ statement. This part of the document
+highlights these ancient idioms.
+
+\subsection{Ordinary and nested DO-loops}
+The ordinary \verb+DO+ loop in FORTRAN looks like this:
+%
+\begin{verbatim}
+      DO 110 I = 1,10
+          ... do something useful ...
+  110 CONTINUE
+\end{verbatim}
+%
+The label number \verb+110+ indicates the end of the \verb+DO+ loop and anything in between
+is repeatedly executed. The Fortran equivalent is, unsurprisingly:
+%
+\begin{verbatim}
+do i = 1,10
+    ... do something useful ...
+enddo
+\end{verbatim}
+%
+But there are a few more things to say about these \verb+DO+ loops. First of all, the
+label number needs not appear with a \verb+CONTINUE+ statement. It could very well be
+put on the last executable statement:
+%
+\begin{verbatim}
+      SUM = 0.0
+      DO 110 I = 1,10
+  110     SUM = SUM + ARRAY(I)
+\end{verbatim}
+%
+It can even be used for multiple, nested, \verb+DO+ loops:
+%
+\begin{verbatim}
+      SUM = 0.0
+      DO 110 J = 1,10
+      DO 110 I = 1,10
+  110     SUM = SUM + ARRAY(I,J)
+\end{verbatim}
+%
+To skip a part of the calculation, you can use a \verb+GOTO+ statement, where in Fortran
+you would use a \verb+cycle+ or \verb+exit+ statement:
+%
+\begin{verbatim}
+*
+* Sum the positive elements only and only if the sum
+* remains smaller than 1.0
+*
+      SUM = 0.0
+      DO 110 I = 1,10
+          IF ( ARRAY(I) .LE. 0.0 ) GOTO 110
+          IF ( SUM .GT. 1.0 ) GOTO 120
+  110     SUM = SUM + ARRAY(I)
+  120 CONTINUE
+\end{verbatim}
+%
+The example is a little contrived, so that you can see the use of the \verb+GOTO+ statement
+for both \verb+cycle+ and \verb+exit+. The modern equivalent becomes:
+%
+\begin{verbatim}
+!
+! Sum the positive elements only and only if the sum
+! remains smaller than 1.0
+!
+      SUM = 0.0
+      DO I = 1,10
+          IF ( ARRAY(I) <= 0.0 ) CYCLE
+          IF ( SUM > 1.0 ) EXIT
+          SUM = SUM + ARRAY(I)
+      ENDDO
+\end{verbatim}
+%
+Note that sharing label numbers in a nested \verb+DO+ loop makes it difficult to
+see what a statement \verb+GOTO endlabel+ should mean: skip an iteration or skip
+the rest of the inner \verb+DO+ loop:
+%
+\begin{verbatim}
+      SUM = 0.0
+      DO 110 J = 1,10
+      DO 110 I = 1,10
+          IF ( SUM .GT. 1.0 ) GOTO 110
+  110     SUM = SUM + ARRAY(I,J)
+\end{verbatim}
+%
+In FORTRAN 66 (also known as FORTRAN IV) there was a significant difference with
+the \verb+DO+ loop you find in current Fortran: a \verb+DO+ loop would always
+be run at least once! This is due to the location of the check on the iteration
+condition, whether it is put at the start or at the end of the \verb+DO+ loop.
+Many compilers still provide an option to allow for the FORTRAN 66 semantics,\cite{Intel}
+which includes this feature:\footnote{I could not find such a flag for the
+gfortran compiler, but for Intel Fortran oneAPI it is -f66.}
+%
+\begin{verbatim}
+* With the right compiler options, print this line once!
+      DO 110 I = 1,0
+          WRITE(*,*) 'FORTRAN 66: ', I
+  110 CONTINUE
+      WRITE(*,*) 'Current value of i:', i
+\end{verbatim}
+%
+With FORTRAN 66 semantics the sample program (see \verb+f66_loop.f90+) prints:
+%
+\begin{verbatim}
+ FORTRAN 66:            1
+ Current value of i:           2
+\end{verbatim}
+With modern semantics it prints:
+%
+\begin{verbatim}
+ Current value of i:           1
+\end{verbatim}
+%
+This can result in subtle but nasty differences, if you are unaware of what
+was meant!
+
+
+\subsection{Simulating a DO-WHILE loop}
+There was no explicit \verb+DO WHILE+ construct in FORTRAN, at least not
+in the standard. Therefore you would need to simulate it using any of the
+following methods:
+
+\vspace{\baselineskip}
+\noindent \emph{A} \verb+DO+ \emph{loop with a large upper bound:}
+\begin{verbatim}
+* Find the right line in a file
+      DO 110 I = 1,10000000
+          READ( 10, '(A)' ) LINE
+          IF ( LINE(1:1) .NE. '*' ) THEN
+              GOTO 120
+          ENDIF
+  110 CONTINUE
+  120 CONTINUE
+* Found the start of the information, proceed
+      ...
+\end{verbatim}
+
+\vspace{\baselineskip}
+\noindent \emph{A combination of label numbers and} \verb+GOTO+ \emph{-- check at the start:}
+\begin{verbatim}
+* Find the right line in a file
+      READ( 10, '(A)' ) LINE
+  110 CONTINUE
+      IF ( LINE(1:1) .NE. '*' ) GOTO 120
+      READ( 10, '(A)' ) LINE
+      GOTO 110
+  120 CONTINUE
+
+* Found the start of the information, proceed
+      ...
+\end{verbatim}
+\noindent (This example is a bit artificial to keep it in line with the other two,
+but similar constructs with different processing definitely occur in practice!)
+
+\vspace{\baselineskip}
+\noindent \emph{A combination of label numbers and} \verb+GOTO+ \emph{-- check at the end:}
+\begin{verbatim}
+* Find the right line in a file
+  110 CONTINUE
+      READ( 10, '(A)' ) LINE
+      IF ( LINE(1:1) .EQ. '*' ) GOTO 110
+
+* Found the start of the information, proceed
+      ...
+\end{verbatim}
+
+A modern equivalent would either use the \verb+DO WHILE+ loop or the unlimited
+\verb+DO+ loop:
+%
+\begin{verbatim}
+!
+! Find the right line in a file
+!
+read( 10, '(a)' ) line
+do while (line(1:1) == '*' )
+    read( 10, '(a)' ) line
+enddo
+
+!
+! Found the start of the information, proceed
+!
+...
+\end{verbatim}
+%
+Or:
+%
+\begin{verbatim}
+!
+! Find the right line in a file
+!
+do
+    read( 10, '(a)' ) line
+    if (line(1:1) == '*' ) exit
+enddo
+
+!
+! Found the start of the information, proceed
+!
+...
+\end{verbatim}
+
+The precise location of the check on the condition depends on what the purpose is and
+whether you can actually check it at the start of the loop, as with a \verb+DO WHILE+,
+or whether you require some preliminary calculation first. If you want to convert
+old-style source code, beware that the logic may sometimes have to be reverted,
+particularly if the condition comes at the end of the loop.
+
+\emph{Note for self: https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2023-0/f66.html}
+
