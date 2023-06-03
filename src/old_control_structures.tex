@@ -32,7 +32,7 @@ The ordinary \verb+DO+ loop in FORTRAN looks like this:
   110 CONTINUE
 \end{verbatim}
 %
-The label number \verb+110+ indicates the end of the \verb+DO+ loop and anything in between
+The statement label \verb+110+ indicates the end of the \verb+DO+ loop and anything in between
 is repeatedly executed. The Fortran equivalent is, unsurprisingly:
 %
 \begin{verbatim}
@@ -42,7 +42,7 @@ enddo
 \end{verbatim}
 %
 But there are a few more things to say about these \verb+DO+ loops. First of all, the
-label number needs not appear with a \verb+CONTINUE+ statement. It could very well be
+statement label needs not appear with a \verb+CONTINUE+ statement. It could very well be
 put on the last executable statement:
 %
 \begin{verbatim}
@@ -92,7 +92,7 @@ for both \verb+cycle+ and \verb+exit+. The modern equivalent becomes:
       ENDDO
 \end{verbatim}
 %
-Note that sharing label numbers in a nested \verb+DO+ loop makes it difficult to
+Note that sharing statement labels in a nested \verb+DO+ loop makes it difficult to
 see what a statement \verb+GOTO endlabel+ should mean: skip an iteration or skip
 the rest of the inner \verb+DO+ loop:
 %
@@ -157,7 +157,7 @@ following methods:
 \end{verbatim}
 
 \vspace{\baselineskip}
-\noindent \emph{A combination of label numbers and} \verb+GOTO+ \emph{-- check at the start:}
+\noindent \emph{A combination of statement labels and} \verb+GOTO+ \emph{-- check at the start:}
 \begin{verbatim}
 * Find the right line in a file
       READ( 10, '(A)' ) LINE
@@ -174,7 +174,7 @@ following methods:
 but similar constructs with different processing definitely occur in practice!)
 
 \vspace{\baselineskip}
-\noindent \emph{A combination of label numbers and} \verb+GOTO+ \emph{-- check at the end:}
+\noindent \emph{A combination of statement labels and} \verb+GOTO+ \emph{-- check at the end:}
 \begin{verbatim}
 * Find the right line in a file
   110 CONTINUE
@@ -228,3 +228,182 @@ particularly if the condition comes at the end of the loop.
 
 \emph{Note for self: https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2023-0/f66.html}
 
+
+\subsection{Three-way IF statements and computed GOTOs}
+Two types of statements that are quite alien to what you find in modern-day programming
+languages are the three-way or artihmetic \verb+IF+ statement and the computed \verb+GOTO+ statement.
+The latter could be used to simulate a \verb+select case+ construct, the first on the
+other hand was, in modern eyes, an unusual predecessor of the \verb+IF ... ELSE ... ENDIF+
+block.
+
+A \emph{computed} \verb+GOTO+ \emph{statement} takes a list of statement labels and a single integer expression:
+%
+\begin{verbatim}
+      GOTO (100, 200, 300) JMP
+  100 CONTINUE
+      WRITE(*,*) 'Jump: 1'
+      GOTO 400
+  200 CONTINUE
+      WRITE(*,*) 'Jump: 2'
+      GOTO 400
+  300 CONTINUE
+      WRITE(*,*) 'Jump: 3'
+  400 CONTINUE
+      ... the rest ...
+\end{verbatim}
+%
+Depending on the value of this expression (the value of \verb+JMP+ in the above example,
+the control would jump to the Nth label. If the value was zero or lower, the \verb+GOTO+
+would not be executed and the program control would simply continue with the next statement.
+This is the case too with a value that is larger than the number of statement labels.
+(See as an illustration the source file \verb+computed_goto.f90+)
+
+Since there is nothing special about the statement labels the control would jump to, you had
+to make sure to jump somewhere else after the handling of each case. In the example that
+is done by jumping to label 400.
+
+The \verb+select case+ construct of Fortran is better behaved, as you do not have to
+take care of jumping to the end yourself and it is possible to select the case via strings
+as well as integer values or even ranges.
+
+There is nothing particularly magic about the \emph{three-way} \verb+IF+ \emph{statement}.
+But you need to know how it works:
+%
+\begin{verbatim}
+      IF (IVALUE) 100, 200, 300
+  100 CONTINUE
+      WRITE(*,*) 'Value is negative - ', IVALUE
+      GOTO 400
+  200 CONTINUE
+      WRITE(*,*) 'Value is zero - ', IVALUE
+      GOTO 400
+  300 CONTINUE
+      WRITE(*,*) 'Value is positive - ', IVALUE
+  400 CONTINUE
+      ... the rest ...
+\end{verbatim}
+%
+The action, a jump to one of the three statement labels, to be taken depends on the
+\emph{sign} of the integer expression. Often two of the statement labels would be the same,
+as two possibilities are more common than three. To see it in action, see the source
+file \verb+three_way_if.f90+. Both statement types still exist in Fortran, or at least
+in the compilers, to support old-style programs.\footnote{The arithmetic IF statement
+was deleted from the Fortran 2018 standard, as gfortran will report. Intel Fortran
+will tell you this when you specify the standard as f18 -- "-stand", defaulting to the
+Fortran 2018 standard.}
+
+
+\subsection{Jumping to the end}
+The \verb+GOTO+ statement was and is also used to jump to a completely different
+part of the program unit for reporting error conditions:
+%
+\begin{verbatim}
+      SUBROUTINE PRSQRT( X )
+
+      IF ( X .LT. 0.0 ) GOTO 900
+
+      WRITE(*,*) 'Square root of X = ', X, ' is ', SQRT(X)
+      RETURN
+
+900   CONTINUE
+      WRITE(*,*) 'X should not be negative - ', X
+      STOP
+      END
+\end{verbatim}
+
+Such statements can be gathered at the end of the program unit so as not to clotter
+the code that deal with normal processing. If you want to avoid the \verb+GOTO+ statement,
+then the modern \verb+BLOCK+ construct will help:
+%
+\begin{verbatim}
+subroutine print_sqrt( x )
+    real :: x
+
+
+    normal: block
+        if ( x < 0.0 ) exit normal
+
+        write(*,*) 'square root of x = ', x, ' is ', sqrt(x)
+        return
+    end block normal
+    !
+    ! Error processing
+    !
+    errors: block
+        write(*,*) 'x should not be negative - ', x
+        stop
+    end block errors
+
+end subroutine print_sqrt
+\end{verbatim}
+
+
+\emph{Note to self: http://www.u.arizona.edu/\~rubinson/copyright\_violations/Go\_To\_Considered\_Harmful.html
+Reprinted from Communications of the ACM, Vol. 11, No. 3, March 1968, pp. 147-148. Copyright (c) 1968, Association for Computing Machinery, Inc.
+}
+
+
+\subsection{The ASSIGN statement}
+The uses of \verb+GOTO+ so far have all been static: the statement labels were fixed
+in the code. While the \verb+GOTO+ statement is frowned upon and it can certainly make
+the control flow difficult to follow when you do not use it in an orderly fashion, there
+is a possibility to use "dynamic" labels, so that the \verb+GOTO+ effectively jumps to
+a varying location. This is achieved by the \verb+ASSIGN+ statement. It is not often
+used, as in most cases better and especially clearer constructs are possible, even
+in FORTRAN, but here is one possible case:
+
+\noindent Suppose you have to compute something complicated in a number of places in a
+program unit, based on a large number of variables, so that using a subroutine or
+a function is awkward, as it leads to a very long argument list. Nowadays you
+can easily use an internal routine, but this was not the case with FORTRAN.
+So, with the \verb+ASSIGN+ statement you could store a location to rerturn to,
+jump ahead to the complicated piece of code, jump back when done, and remain in
+the same routine. Here is a simple example:
+%
+\begin{verbatim}
+      SUBROUTINE( ICASE )
+      A = 1.0
+      B = 2.0
+      C = 3.0
+      IF ( ICASE .EQ. 1 ) ASSIGN 100 TO JMP
+      IF ( ICASE .EQ. 2 ) ASSIGN 200 TO JMP
+      IF ( ICASE .EQ. 3 ) ASSIGN 300 TO JMP
+      GOTO 900
+
+* Case 1: use the result in F
+  100 CONTINUE
+      WRITE(*,*) 'Case ', ICASE, 'value is ', F
+      GOTO 400
+
+* Case 2: use the result in G
+  200 CONTINUE
+      C = 4.0
+      WRITE(*,*) 'Case ', ICASE, 'value is ', G
+      GOTO 400
+
+* Case 3: use the result in H
+  300 CONTINUE
+      WRITE(*,*) 'Case ', ICASE, 'value is ', H
+      GOTO 400
+
+* All done, continue
+  400 CONTINUE
+      WRITE(*,*) 'Done'
+      RETURN
+
+*
+  900 CONTINUE
+* We can use the local variables directly
+      F = A + B + C
+      G = A + B * C
+      H = A * B + C
+
+* We are done, so return to the "caller"
+      GOTO JMP
+      END
+\end{verbatim}
+
+It is a useless and contrived example, but it is only meant to illustrate how
+a "dynamic" jump can be constructed -- the part after statement label 900
+is actually independent of whatever happens above it. You can extend it with
+new cases, without having to worry about the computational part.
