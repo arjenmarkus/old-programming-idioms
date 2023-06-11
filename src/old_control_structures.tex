@@ -1,25 +1,7 @@
 \section{Control structures}
-Placeholder:
-\begin{itemize}
-\item
-Nested do-loop
-\item
-Simulated do-while
-\item
-Jumping out of a do-loop
-\item
-IF-constructions, including "select-case"
-\item
-ASSIGN statement
-\item
-Computed GOTO
-\item
-Three-way IF
-\end{itemize}
-
 FORTRAN came with a small number of control constructs and it was quite usual to construct
 other control flows via \verb+IF+ and \verb+GOTO+ statements. It inherited some constructs
-from its predecessors that are very uncommon nowadays: the three=way \verb+IF+ and the
+from its predecessors that are very uncommon nowadays: the arithmetic (or three=way) \verb+IF+ and the
 computed \verb+GOTO+, as well as the \verb+ASSIGN+ statement. This part of the document
 highlights these ancient idioms.
 
@@ -72,7 +54,8 @@ you would use a \verb+cycle+ or \verb+exit+ statement:
       DO 110 I = 1,10
           IF ( ARRAY(I) .LE. 0.0 ) GOTO 110
           IF ( SUM .GT. 1.0 ) GOTO 120
-  110     SUM = SUM + ARRAY(I)
+          SUM = SUM + ARRAY(I)
+  110 CONTINUE
   120 CONTINUE
 \end{verbatim}
 %
@@ -84,12 +67,12 @@ for both \verb+cycle+ and \verb+exit+. The modern equivalent becomes:
 ! Sum the positive elements only and only if the sum
 ! remains smaller than 1.0
 !
-      SUM = 0.0
-      DO I = 1,10
-          IF ( ARRAY(I) <= 0.0 ) CYCLE
-          IF ( SUM > 1.0 ) EXIT
-          SUM = SUM + ARRAY(I)
-      ENDDO
+sum = 0.0
+do i = 1,10
+    if ( array(i) <= 0.0 ) cycle
+    if ( sum > 1.0 ) exit
+    sum = sum + array(i)
+enddo
 \end{verbatim}
 %
 Note that sharing statement labels in a nested \verb+DO+ loop makes it difficult to
@@ -312,7 +295,7 @@ part of the program unit for reporting error conditions:
 \end{verbatim}
 
 Such statements can be gathered at the end of the program unit so as not to clotter
-the code that deal with normal processing. If you want to avoid the \verb+GOTO+ statement,
+the code that deals with normal processing. If you want to avoid the \verb+GOTO+ statement,
 then the modern \verb+BLOCK+ construct will help:
 %
 \begin{verbatim}
@@ -337,6 +320,10 @@ subroutine print_sqrt( x )
 end subroutine print_sqrt
 \end{verbatim}
 
+\emph{Note:} the \verb+errors+ block is merely introduced to syntactically
+distinguish the error handling from the normal handling. It does not influence
+in this form the flow of control.
+
 
 \emph{Note to self: http://www.u.arizona.edu/\~rubinson/copyright\_violations/Go\_To\_Considered\_Harmful.html
 Reprinted from Communications of the ACM, Vol. 11, No. 3, March 1968, pp. 147-148. Copyright (c) 1968, Association for Computing Machinery, Inc.
@@ -356,7 +343,7 @@ in FORTRAN, but here is one possible case:
 program unit, based on a large number of variables, so that using a subroutine or
 a function is awkward, as it leads to a very long argument list. Nowadays you
 can easily use an internal routine, but this was not the case with FORTRAN.
-So, with the \verb+ASSIGN+ statement you could store a location to rerturn to,
+So, with the \verb+ASSIGN+ statement you could store a location to return to,
 jump ahead to the complicated piece of code, jump back when done, and remain in
 the same routine. Here is a simple example:
 %
@@ -407,3 +394,6 @@ It is a useless and contrived example, but it is only meant to illustrate how
 a "dynamic" jump can be constructed -- the part after statement label 900
 is actually independent of whatever happens above it. You can extend it with
 new cases, without having to worry about the computational part.
+
+\subsubsection{The DO-loop with a real index variable}
+TODO

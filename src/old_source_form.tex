@@ -1,0 +1,166 @@
+\section{Source forms}
+Placeholder:
+\begin{verbatim}
+- separate compilations, the misunderstanding of one routine per file
+- compiler directives (especially proprietary ones)
+\end{verbatim}
+
+
+Directives: just an example, taken from the thread on MAX/MIN on the Intel Fortran forum
+\begin{verbatim}
+module m_mod
+  implicit none
+  real, allocatable, dimension (:) :: aa, bb, cc
+  !dir$ attributes align:32 :: aa, bb, cc
+  !dir$ assume_aligned aa:32, bb:32, cc:32
+end module m_mod
+\end{verbatim}
+
+The source form of FORTRAN, now known as \emph{fixed form}, shows its heritage in the era of punchcards:
+Each line could be up to 80 characters long, but only the first 72 characters had actual meaning. Some
+editors would add line numbers in the column 73--80 or people could add short comments. It had and has
+a few curiosities beyond the mere signficance of the columns.
+
+The alternative source form that was introduced with the Fortran~90 standard is more flexible and should
+definitely be used for any new source.
+
+\subsection{The significance of spaces}
+The original fixed form for FORTRAN sources has at least the following curiosities:
+\begin{itemize}
+\item
+In the columns 1 to 5 you can only put comments, if the first character is a comment character ("C" or "*"),
+or statement labels.
+\item
+The sixth column is reserved to indicate that the previous line is continued:
+\begin{verbatim}
+      WRITE(*,*) 'A long sentence that spans over two',
+     &           'or more lines'
+\end{verbatim}
+The continuation character, in the above the "\&", can actually be any character with the exception of
+a zero (0). Some programmers would use digits, so that you can easily count the number of lines.
+\item
+The columns 7 to 72 were used for the actual code.
+\item
+The columns 73 to 80 were reserved for comments, to the discretion of the user.
+\item
+\emph{Spaces had no significance}, except within literal strings.
+\end{itemize}
+Especially this last property may come as a surprise. To illustrate this (see \verb+fixedform.f+):
+\begin{verbatim}
+      PROGRAM FIXEDFORM
+
+      INTEGER :: I
+
+      DO 100 I = 1.10
+          WRITE(*,*) I
+  100 CONTINUE
+!
+!     ILLUSTRATE THE FACT THAT SPACES HAVE NO MEANING ...
+!
+      DO 110 I = 1,10
+      I F ( I . E Q . 4 ) T H E N
+          W R I T E ( * , * ) I
+      E N D I F
+  110 C O N T I N U E
+      END
+\end{verbatim}
+Keywords in FORTRAN and Fortran are not reserved words and in fixed form you can
+put between the letters as many spaces you want, anywhere.
+
+Running this program might produce the following output:
+\begin{verbatim}
+   578772136
+           4
+\end{verbatim}
+"Might", because there is an uninitialised variable here: the line \verb+DO 100 I = 1.100+
+contains a typo. Instead of a comma, it contains a decimal point and thus the line is
+interpreted as:
+\begin{verbatim}
+      DO100I = 1.10
+\end{verbatim}
+The variable \verb+DO100I+ gets assigned the value 1.10, which is why there is no DO loop
+to produce ten lines in the output, counting from 1 to 10. Such mistakes can be caught
+by using the \verb+IMPLICIT NONE+ statement, a common enough extension.\cite{Lionel}\footnote{This statement
+was formalized in "MIL-STD-1753", precisely to make the coding safer.}
+
+\emph{Note to self: https://stevelionel.com/drfortran/2021/09/18/doctor-fortran-in-implicit-dissent/}
+
+
+\subsection{The character set}
+Officially, FORTRAN code should be written with capitals only. Lowercase letters are only
+allowed in literal strings. Again, a heritage of the machinery of old. But it has been
+allowed by compilers to use lowercase as well.
+
+Beyond letters of the Latin alphabet you can use digits and underscores and several other characters.
+Even today, the standard is quite strict: characters outside the officially supported set are only
+allowed (or tolerated?) in literal strings.
+
+
+\subsection{Variables, functions, names and types}
+A feature that Fortran code relies on less and less is the use of \emph{implicit typing}: of old
+a variable, or indeed a function, was of type \verb+integer+ if its name starts with one of: I, J, K, L, M or N.
+If not, the variable or function was of type \verb+real+. You could declare the name as being of a different type, but
+required an explicit declaration.
+
+Because of this implicit typing, mistakes in names were a serious source of errors.
+
+In FORTRAN, names were also limited to six (significant) characters, a limitation shared with the linkers.
+
+This six-characters limit was even more severe as the names of subroutines, functions and \verb+COMMON+ blocks
+were global for the whole program. There was no other scope or control of visibility. This made it
+very important to explicitly define the names of such entities for any library you wrote, as naming conflicts
+could not be solved via a renaming clause, as they can nowadays in Fortran.
+
+
+\subsection{Special comments: D}
+Sometimes in old code you can see a character "D" in the first column. This is considered a comment line,
+unless you specify a compile option like \verb+/d-lines+ for the Intel Fortran compilers. Not all compilers
+support this, gfortran does not seem to have an option for it. The effect of specifying the relevant
+option is that the line is no longer considered a comment line, but is actual code. If supported by the compiler,
+it is only available for fixed form source.
+
+It is a rather awkward form of "preprocessing":
+\begin{itemize}
+\item
+It is a compiler extension or at least not supported by all compilers. The now deprecated g77 compiler acknowledged
+the existence of such lines, but provided no facilities.
+
+\emph{Note to self: https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Debug-Line.html}
+\item
+It is not available for free form source.
+\item
+A practical problem is that it does not evolve with the code itself, as in the normal build process, these
+lines are considered comments.
+\end{itemize}
+
+It is just as easy to use ordinary code to provide debugging facilities:
+\begin{verbatim}
+      PROGRAM FIXEDDEBUG
+
+D     WRITE(*,*) 'Note: in debugging mode ...'
+      WRITE(*,*) 'Hello, world'
+
+      END PROGRAM FIXEDDEBUG
+\end{verbatim}
+
+The program (see the file \verb+fixeddebug.f+) is not accepted by gfortran because of the D-line, but Intel Fortran
+compiles it with and without the option \ver+-d-lines+, only producing different output.
+
+You could make the intent clearer using something along these lines (or a modern equivalent):
+\begin{verbatim}
+      PROGRAM FIXEDDEBUG
+      LOGICAL DEBUG
+      PARAMETER (DEBUG = .FALSE.)
+
+      IF (DEBUG) WRITE(*,*) 'Note: in debugging mode ...'
+      WRITE(*,*) 'Hello, world'
+
+      END PROGRAM FIXEDDEBUG
+\end{verbatim}
+
+With FORTRAN the \verb+debug+ parameter was best put in an include file to ensure that every programn unit
+used the same setting. With Fortran a module containing such a parameter will do.
+
+\quote{
+\emph{Note:} If you use a \emph{parameter} instead of a \emph{variable}, many compilers will even eliminate
+the debugging code from the resulting program, but the code is compiled.}
