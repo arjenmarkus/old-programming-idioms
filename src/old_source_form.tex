@@ -1,21 +1,4 @@
 \section{Source forms}
-Placeholder:
-\begin{verbatim}
-- separate compilations, the misunderstanding of one routine per file
-- compiler directives (especially proprietary ones)
-\end{verbatim}
-
-
-Directives: just an example, taken from the thread on MAX/MIN on the Intel Fortran forum
-\begin{verbatim}
-module m_mod
-  implicit none
-  real, allocatable, dimension (:) :: aa, bb, cc
-  !dir$ attributes align:32 :: aa, bb, cc
-  !dir$ assume_aligned aa:32, bb:32, cc:32
-end module m_mod
-\end{verbatim}
-
 The source form of FORTRAN, now known as \emph{fixed form}, shows its heritage in the era of punchcards:
 Each line could be up to 80 characters long, but only the first 72 characters had actual meaning. Some
 editors would add line numbers in the column 73--80 or people could add short comments. It had and has
@@ -33,6 +16,7 @@ or statement labels.
 \item
 The sixth column is reserved to indicate that the previous line is continued:
 \begin{verbatim}
+*234567890
       WRITE(*,*) 'A long sentence that spans over two',
      &           'or more lines'
 \end{verbatim}
@@ -45,6 +29,7 @@ The columns 73 to 80 were reserved for comments, to the discretion of the user.
 \item
 \emph{Spaces had no significance}, except within literal strings.
 \end{itemize}
+
 Especially this last property may come as a surprise. To illustrate this (see \verb+fixedform.f+):
 \begin{verbatim}
       PROGRAM FIXEDFORM
@@ -83,7 +68,8 @@ to produce ten lines in the output, counting from 1 to 10. Such mistakes can be 
 by using the \verb+IMPLICIT NONE+ statement, a common enough extension.\cite{Lionel}\footnote{This statement
 was formalized in "MIL-STD-1753", precisely to make the coding safer.}
 
-\emph{Note to self: https://stevelionel.com/drfortran/2021/09/18/doctor-fortran-in-implicit-dissent/}
+\emph{Note to self: https://stevelionel.com/drfortran/2021/09/18/doctor-fortran-in-implicit-dissent/
+}
 
 
 \subsection{The character set}
@@ -100,7 +86,7 @@ allowed (or tolerated?) in literal strings.
 A feature that Fortran code relies on less and less is the use of \emph{implicit typing}: of old
 a variable, or indeed a function, was of type \verb+integer+ if its name starts with one of: I, J, K, L, M or N.
 If not, the variable or function was of type \verb+real+. You could declare the name as being of a different type, but
-required an explicit declaration.
+that required an explicit declaration.
 
 Because of this implicit typing, mistakes in names were a serious source of errors.
 
@@ -125,7 +111,8 @@ It is a rather awkward form of "preprocessing":
 It is a compiler extension or at least not supported by all compilers. The now deprecated g77 compiler acknowledged
 the existence of such lines, but provided no facilities.
 
-\emph{Note to self: https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Debug-Line.html}
+\emph{Note to self: https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Debug-Line.html
+}
 \item
 It is not available for free form source.
 \item
@@ -135,6 +122,7 @@ lines are considered comments.
 
 It is just as easy to use ordinary code to provide debugging facilities:
 \begin{verbatim}
+*234567890
       PROGRAM FIXEDDEBUG
 
 D     WRITE(*,*) 'Note: in debugging mode ...'
@@ -144,7 +132,7 @@ D     WRITE(*,*) 'Note: in debugging mode ...'
 \end{verbatim}
 
 The program (see the file \verb+fixeddebug.f+) is not accepted by gfortran because of the D-line, but Intel Fortran
-compiles it with and without the option \ver+-d-lines+, only producing different output.
+compiles it with and without the option \verb+-d-lines+, only producing different output.
 
 You could make the intent clearer using something along these lines (or a modern equivalent):
 \begin{verbatim}
@@ -161,6 +149,76 @@ You could make the intent clearer using something along these lines (or a modern
 With FORTRAN the \verb+debug+ parameter was best put in an include file to ensure that every programn unit
 used the same setting. With Fortran a module containing such a parameter will do.
 
-\quote{
+\begin{quote}
 \emph{Note:} If you use a \emph{parameter} instead of a \emph{variable}, many compilers will even eliminate
-the debugging code from the resulting program, but the code is compiled.}
+the debugging code from the resulting program, but the code is compiled.
+\end{quote}
+
+
+\subsection{Compiler directives}
+Besides specific options, most if not all compilers have what are known as \emph{compiler directives}. These
+take the form of a comment with a special format. As they are specific to the compiler, the precise form
+depends on the compiler, as well as what you can do with them. There are also compiler directives that
+are defined as a standard, like the \emph{OpenMP} directives.\footnote{Compiler directives have their
+equivalent in C. There they are called pragmas and function in much the same way.}
+
+Here is one example: an implicit way to redefine the default precision for real variables:
+
+\begin{verbatim}
+C For the Intel Fortran compiler:
+!DIR$ REAL:8
+\end{verbatim}
+
+This specifies the \verb+kind+ of real variables that are not declared with an explicit kind themselves.
+
+Another example of a completely different nature:
+
+\begin{verbatim}
+C For the gfortran compiler:
+!GCC$ unroll 10
+\end{verbatim}
+
+The gfortran compiler supports loop unrolling and with this directive you control how this is done.
+
+\emph{Note to self:}
+
+https://gcc.gnu.org/onlinedocs/gfortran/UNROLL-directive.html
+
+https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2023-0/real-directive.html\#GUID-38B61FE4-4058-497A-9AAA-2AF1BB56C178
+
+
+Since these directives come with a specific compiler, you will need to check the documentation of
+the program or, more generally perhaps, the favoured compiler to see what the meaning is. It is not
+always entirely innocent: loop unrolling is an optimisation technique, but barring errors in the
+compiler, it should not matter for the outcome of a program whether the directive has been adhered
+to or not. This is different for the first directive -- the default precision may have a significant
+effect!
+
+
+\subsection{Separate compilation}
+One of the objectives of the design of FORTRAN, which continues in today's standards, is that
+source files can be compiled independently. This shoud be read as: it is not necessary to
+compile the whole program in one step. In FORTRAN that was fairly easy: besides include statements
+there is no actual dependency possible. So, a source file can be compiled without knowing anything
+about other parts of the program.
+
+In Fortran, there are dependencies beyond included files: if the program unit uses one or more
+(non-intrinsic) modules, then the order of compilation is that first the source files containing
+these modules must be compiled and then the source file with the using program unit.
+
+The idea of separate compilation is a very powerful one, certainly in times when desk checking
+the code was a necessary first step, because the actual compilation might be done during the night,
+with you coming back in the morning to find out that you made a typo somewhere. Compiling source files
+separately and storing the resulting object files in libraries helps to minimize the risks of
+losing time.
+
+But a side effect of this is that some programmers interpreted this as meaning: you should put all
+subroutines and functions in separate files. This does have one advantage, namely that the object files
+would only contain a single program unit and the linker would incorporate only the program units
+that are actually called. The disadvantage is that you may have to combine a large number of
+files into a library, because all the little subroutines and functions are in individual source files.
+
+With the modules we have nowadays it is much easier to manage the routines. You can hide the ones
+that are not intended for outside use (so their names cannot cause trouble) and you can store
+the routines that functionally belong together in one and the same module, or organise the code
+in submodules.
