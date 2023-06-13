@@ -17,4 +17,174 @@ Placeholder:
 - carriage control: 0, 1, +
 \end{verbatim}
 
+Almost any program will read some kind of input files and produce some kind of
+output files. FORTRAN defined, roughly, three types of files:
+\begin{itemize}
+\item
+Text files meant to read or edited by humans. These are known as \emph{formatted files}.
+\item
+Binary files with a record structure of sorts, so that you could read a part of the
+record and then automatically jump to the next. These are \emph{unformatted, sequential files}.
+They are compact and might be considered \emph{binary} files.
+\item
+Binary files with records that have a fixed length and where you can position the \verb+READ+
+or \verb+WRITE+ action to a particular record: the \emph{unformatted direct-access files}.\footnote{
+Actually, there are also formatted direct-access files, but these are seldom used.}
+\end{itemize}
+
+Input and output in FORTRAN was always oriented towards records. For instance, if you read a number
+from a formatted file, then the read position is automatically move to the start of the next line,
+independent of the amount of data left on the previous line.
+
+Similarly, writing to a file always produced a complete line. And the next write action would start
+on a new line.
+
+Since Fortran 2003 the language also supports \emph{stream-access} for both unformatted and formatted
+files. Before that standard, there were several more or less popular extensions to achieve the same
+effect.
+
+
+\subsection{Direct-access files}
+By default, direct-access files are unformatted -- values are dumped to the file or retrieved
+without the help of a human-readable format. Properties of direct-access files:
+\begin{itemize}
+\item
+You have to specify a record length, which holds for all records, when opening such a file.
+You can, however, open the file with different record lengths, if your application benefits
+from that. In other words, the length is not a property of the file itself.
+\item
+Direct-access files can be read or written by specifying a record number. Thus, like the name
+implies, you can jump around in the file at will.
+\item
+The record length is usually specified in \emph{bytes} but some compilers, like Intel Fortran,
+use \emph{words} as the unit. Where there was no way to know programmatically in FORTRAN what
+size was meant, since Fortran 2003, the intrinsic module \verb+iso_fortran_env+ contains the parameter \verb+file_storage_unit+
+which is the size in bits.
+\end{itemize}
+
+Direct-access files, due to their simplicity, are compact and portable, as the structure of
+unformatted files depends on the compiler that was used for building the program (see below).
+
+The main issues that makes these files non-portables are the binary representation of the
+numbers they contain. Nowadays, the main variation is the \emph{endianness}: the order of the
+bytes that make up the number.
+
+Here is a simple example of opening, writing and reading a direct-access file:
+
+\begin{verbatim}
+      PROGRAM DIRECTACCESS
+
+      REAL VALUE(10)
+      INTEGER I, REC
+
+      OPEN( 10, FILE = 'directaccess.bin', ACCESS = 'DIRECT',
+     &      RECL = 4*10 )
+
+*
+* CALCULATE SOME DATA AND WRITE THEM TO THE FILE
+*
+      DO 120 REC = 1,10
+          DO 110 I = 1,10
+              VALUE(I) = I + REC * 10.0
+  110     CONTINUE
+
+          WRITE( 10, REC = REC ) VALUE
+  120 CONTINUE
+
+*
+* READ THE DATA - IN REVERSE ORDER
+*
+      DO 220 REC = 10,1,-1
+          READ( 10, REC = REC ) VALUE(1), VALUE(2)
+          WRITE( *, * ) VALUE(1), VALUE(2)
+  220 CONTINUE
+      END PROGRAM
+\end{verbatim}
+
+It produces output like:
+\begin{verbatim}
+   101.000000       102.000000
+   91.0000000       92.0000000
+   81.0000000       82.0000000
+   71.0000000       72.0000000
+   61.0000000       62.0000000
+   51.0000000       52.0000000
+   41.0000000       42.0000000
+   31.0000000       32.0000000
+   21.0000000       22.0000000
+   11.0000000       12.0000000
+\end{verbatim}
+
+
+\subsection{Unformatted sequential files}
+Data in sequential files, as the name suggests, are accessed in the order in which they appear in the files.
+For unformatted files you write the records one by one and you can read the records back one by one.
+But you cannot read more data from the record than its length. This is actually encoded in the file.
+The following program will therefore fail, as it tries to read more data than present in the first
+record:
+
+\begin{verbatim}
+      PROGRAM SEQUNFORM
+
+      REAL VALUE(10)
+      INTEGER I, J
+
+      OPEN( 10, FILE = 'sequnform.bin', FORM = 'UNFORMATTED' )
+
+*
+* CALCULATE SOME DATA AND WRITE THEM TO THE FILE
+* THE RECORDS GET LONGER
+*
+      DO 120 J = 1,10
+          DO 110 I = 1,10
+              VALUE(I) = I + J * 10.0
+  110     CONTINUE
+
+          WRITE( 10 ) (VALUE(I), I = 1,J )
+  120 CONTINUE
+
+*
+* READ THE DATA - IN REVERSE ORDER
+*
+      REWIND( 10 )
+
+*
+* FIRST RECORD: ONLY ONE VALUE
+*
+      READ( 10 ) VALUE(1)
+      WRITE( *, * ) VALUE(1)
+
+*
+* SECOND RECORD: TWO VALUES, BUT READ TEN
+*
+      READ( 10 ) VALUE
+      WRITE( *, * ) VALUE(1)
+
+      END PROGRAM
+\end{verbatim}
+
+Reading the first record works, but it fails on the second, as the program
+tries to read 10 values, whereas the record only contain two (the gfortran was used):
+
+\begin{verbatim}
+   11.0000000
+At line 38 of file sequnform.f (unit = 10, file = 'sequnform.bin')
+Fortran runtime error: I/O past end of record on unformatted file
+
+Error termination. Backtrace:
+
+Could not print backtrace: libbacktrace could not find executable to open
+#0  0xa11301fa
+#1  0xa11278a1
+#2  0xa1122d90
+#3  0xa1148e3e
+#4  0xa1130e81
+#5  0xa1101841
+#6  0xa11018e4
+#7  0xa11013bd
+#8  0xa11014f5
+#9  0xb56c7613
+#10  0xb76a26a0
+#11  0xffffffff
+\end{verbatim}
 

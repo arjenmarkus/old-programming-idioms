@@ -7,6 +7,33 @@ a few curiosities beyond the mere signficance of the columns.
 The alternative source form that was introduced with the Fortran~90 standard is more flexible and should
 definitely be used for any new source.
 
+
+\subsection{Fixed form versus free form}
+FORTRAN source files usually have an extension \verb+.f+ and on PCs, before you could use long names,
+the extension often was \verb+.for+. There is, however, nothing special about these file extensions. They
+are merely a convention, useful for the compiler as it can use it to identify the source form. The
+free form source is often indicated by the extension \verb+.f90+. \emph{This should not be taken to mean
+that the code adheres to the Fortran~90 standard}, just as there is no particular difference as far as
+file extensions are concerned for FORTRAN~66 or FORTRAN~77.\footnote{File extensions themselves are
+a fairly recent feature of computer file systems. Older systems had different conventions.}
+
+To elaborate a bit on these file extensions:
+\begin{itemize}
+\item
+Fixed form is often identified by \verb+.f+ or for some old compilers on Windows \verb+.for+, but
+that is not mandated by any standard and compilers often support options to specify what the
+source form is, if the extension is misleading.
+\item
+On file systems where file names are case-sensitive, such Linux, an extension \verb+.F+ or \verb+.F90+
+is often meant to automatically invoke a preprocessor like C's preprocessor. Alternatively, you
+can also use compiler options to invoke the preprocessor explicitly.
+\item
+Preprocessing is not part of the FORTRAN or Fortran standards. It is simply an extension (no pun intended)
+that may or may not be supported by the compiler. As a consequence, there is no prescribed syntax, though
+very often the C conventions are used.
+\end{itemize}
+
+
 \subsection{The significance of spaces}
 The original fixed form for FORTRAN sources has at least the following curiosities:
 \begin{itemize}
