@@ -1,20 +1,14 @@
 \section{Input and output intricacies}
 Placeholder:
 \begin{verbatim}
-- standard input and output
-- LU-numbers 5 and 6 (and 7)
 - command-line arguments for file names
 - big-endian and little-endian
-- unformatted versus binary files
 - list-directed input and output - also: /
 - narrow formats (?)
 - use of d00 in input
 - FORTRAN 66 semantics: OPEN - STATUS = 'NEW' as default.
 - Effect of BLANK = 'ZERO' versus BLANK = 'NULL'
-- read(10,*) n, (array(i), i = 1,n)
 - 32-bits machines and unformatted files
-- direct-access files
-- carriage control: 0, 1, +
 \end{verbatim}
 
 Almost any program will read some kind of input files and produce some kind of
@@ -42,6 +36,64 @@ on a new line.
 Since Fortran 2003 the language also supports \emph{stream-access} for both unformatted and formatted
 files. Before that standard, there were several more or less popular extensions to achieve the same
 effect.
+
+
+\subsection{Standard input and output}
+FORTRAN had no concept of standard input and standard output files. But there was a de facto
+standard in the form of logical unit numbers that were predefined:
+\begin{itemize}
+\item
+The unit number \verb+6+ was typically connected to the terminal:
+\begin{verbatim}
+      WRITE(6,*) 'Enter a number:'
+\end{verbatim}
+\item
+The unit number \verb+5+ was typically connected to the keyboard:
+\begin{verbatim}
+*     Let the user type a number and read it
+      READ(5,*) value
+\end{verbatim}
+\item
+Other "magic" unit numbers could exist, such as \verb+7+, often connected to a tape drive.
+\item
+Standard error could be connected to unit number \verb+0+ on some systems and would behave
+differently than standard output: no buffering, not redirected to file without extra care.
+\end{itemize}
+
+The FORTRAN 77 standard introduced the asterisk as a convenient way to define standard input
+and output without referring to a specific number: even though almost universal, these numbers
+were not defined by the FORTRAN standard.
+
+With the advent of Fortran~2008 the intrinsic module \verb+iso_fortran_env+ now defines
+parameters like \verb+INPUT_UNIT+ to indicate the logical unit number for standard input and
+similar ones for standard output and error.
+
+
+\subsection{Carriage control}
+Printers of old had a simple system to control the positioning of the output on the paper:
+a character in the first column of a line to be output determined what would happen. Here
+are the (common) codes:
+\begin{table}[h]
+\begin{tabular}{ll}
+\hline
+Character    & Meaning \\
+\hline
+space        & Go to the next line -- the usual way of positioning \\
+0            & Skip one line \\
+1            & Go to the next page \\
++            & Do \emph{not} go to the next line -- print over the current \\
+\end{tabular}
+\end{table}
+
+On some systems it would work on the terminal as well.
+
+An extension to the write statement that had to do with controlling the cursor on a
+terminal was the dollar sign:
+\begin{verbatim}
+      WRITE(6,'(a,$)') 'Enter a number:'
+\end{verbatim}
+
+The dollar sign meant that the cursor should stay on the last written line.
 
 
 \subsection{Direct-access files}
@@ -188,3 +240,68 @@ Could not print backtrace: libbacktrace could not find executable to open
 #11  0xffffffff
 \end{verbatim}
 
+One essential difference between unformatted sequential files and stream-access files,
+which were introduced in the Fortran~2003 standard, is that these unformatted sequential files
+hold extra bytes to indicate the records. These extra bytes are an implementation detail,
+not defined in the standard. A common scheme is:
+\begin{itemize}
+\item
+The record starts with an integer number of four bytes that defines how many bytes
+will follow.
+\item
+The bytes after that integer are the actual data.
+\item
+The record is closed with the same integer number, so that a check is possible but it
+is also possible to go back in the file via the \verb+BACKSPACE+ statement\footnote{The
+BACKSPACE statement originated with tapes as main mass data storage.}
+\end{itemize}
+
+Thus the following statement has the effect of skipping a record:
+%
+\begin{verbatim}
+      READ(10)
+\end{verbatim}
+%
+\noindent whereas with a stream-access file nothing would happen, as these files have no
+concept of a record.
+
+A common extension was that of the so-called \emph{binary} file. Such a file is essentially
+what we now know as stream-access, but opening a file as \emph{binary} required a specific,
+compiler-dependent keyword and not all compilers supported this type. Here is an example:
+%
+\begin{verbatim}
+      OPEN(10, FILE = 'data.bin', FORM = 'BINARY')
+\end{verbatim}
+
+
+\subsection{Reading an array}
+FORTRAN 77 defined a convenient way to read in arrays:
+%
+\begin{verbatim}
+      REAL A(100)
+      ...
+      READ(10,*) A
+\end{verbatim}
+%
+This reads 100 numbers from the file connected to unit number \verb+10+. But you can
+also use the following, using a so-called implied do-loop:
+%
+\begin{verbatim}
+      INTEGER I, N
+      REAL A(100)
+      ...
+      READ(10,*) N
+      READ(10,*) (A(I), I = 1,N)
+\end{verbatim}
+%
+A clever trick is to read the number of values and the values themselves in one statement:
+%
+\begin{verbatim}
+      INTEGER I, N
+      REAL A(100)
+      ...
+      READ(10,*) N, (A(I), I = 1,N)
+\end{verbatim}
+%
+Because the value of N is known when the do-loop starts, there is no problem reading
+the array in this fashion. (Unless, of course, N exceeds the size of the array.)
