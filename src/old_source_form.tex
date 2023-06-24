@@ -124,6 +124,14 @@ were global for the whole program. There was no other scope or control of visibi
 very important to explicitly define the names of such entities for any library you wrote, as naming conflicts
 could not be solved via a renaming clause, as they can nowadays in Fortran.
 
+While the \verb+IMPLICIT+ statement is used nowadays mostly to turn off the implicit typing via \verb+implicit none+,
+it can be used to define a particular type to variable whose names started with a particular character:
+\begin{verbatim}
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+\end{verbatim}
+
+\noindent means that all variables (and functions) whose names start with any of the letters A, B, ..., H or
+O, P, ... Z would have the type \verb+DOUBLE PRECISION+, unless explicitly given a different type.
 
 \subsection{Special comments: D}
 Sometimes in old code you can see a character "D" in the first column. This is considered a comment line,

@@ -396,4 +396,44 @@ is actually independent of whatever happens above it. You can extend it with
 new cases, without having to worry about the computational part.
 
 \subsubsection{The DO-loop with a real index variable}
-TODO
+A peculiar feature of FORTRAN 77 was the introduction of a DO-loop gouverned
+by a real variable. This means that the precise values of the variable might
+influnce the number of iterations, for instance. A simple program to
+illustrate this (see \verb+real_do.f90+):
+\begin{verbatim}
+      PROGRAM REAL_DO
+      IMPLICIT NONE
+
+      INTEGER I, N
+      REAL    R
+
+      DO 120 I = 1,10
+          N = 0
+          DO 110 R = 0.0, 1.0*I, 0.1*I
+              WRITE(*,*) R
+              N = N + 1
+          ENDDO
+          WRITE(*,*) 'Number of iterations: ', N
+      ENDDO
+      END
+\end{verbatim}
+
+The output of the program with the Intel Fortran (leaving out the values of \verb+R+):
+\begin{verbatim}
+ Number of iterations:           11
+ Number of iterations:           11
+ Number of iterations:           10
+ Number of iterations:           11
+ Number of iterations:           11
+ Number of iterations:           10
+ Number of iterations:           11
+ Number of iterations:           11
+ Number of iterations:           10
+ Number of iterations:           11
+\end{verbatim}
+
+So, some DO-loops get 11 iterations, what you would expect with exact arithmetic
+and others get only 10. If you run this program with the gfortran compiler the result
+is a uniform 11 iterations -- apparently the loop is controlled in a different way!
+Apart from the unpredictability of the number of iterations with one compiler, you
+can also not rely on the portability of the program.

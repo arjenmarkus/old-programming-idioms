@@ -1,17 +1,85 @@
 \section{Subroutines and functions}
 Placeholder:
 \begin{verbatim}
-- array(*) versus array(:)
-- array(10) as the starting point
 - constants as actual arguments
 - intent
-- temporary arrays - non-contiguous arrays
 - checking interfaces
 - entry
 - external, also notation "*tan"
 - Specific names for functions like max() and sin()
 - Alternate return
-- array(1) instead of array(*)
 - statement functions
 
 \end{verbatim}
+
+\subsection{General remarks}
+Older compilers were not so very sophisticated when it comes to checking the
+actual argument lists of calls to subroutines or functions against the
+dummy (expected) argument lists of these program units. This is partly due
+to there not being a mechanism in FORTRAN for providing such checks, even though
+some compilers could implement these checks at run-time. It was also used sometimes
+to allow for flexibility. For instance: if you do not care if an array holds integers
+or reals, because you are simply writing them to some binary file, then one
+routine would suffice to take care of both types (perhaps even including double
+precision numbers).
+
+A more common situation: allow one-dimensional arrays to be used as two-dimensional
+or pass scalars to array dummy arguments. As long as you remain with the allotted
+memory, there should be no problem.
+
+\subsection{Passing arrays}
+Several surprising idioms are connected to the passing of arrays to subroutines
+and functions:
+\begin{itemize}
+\item
+The dummy argument could be declared as \verb+REAL ARRAY(1)+. This was not
+unusual in programs predating FORTRAN~77, as that introduced the asterisk for
+arrays whose sizes are not defined in the routine perse: \verb+REAL ARRAY(*)+, the
+so-called assumed-size arrays.
+
+In both cases, the routine would have to know what the actual size of the array
+should be. Often, that was done via an extra argument (see for instance \ref{workarrays}).
+
+With Fortran you can use assumed-shape arrays, so that the dimensions of the array
+are passed on automatically. This does require that the interface is explicit. If the
+compiler does not see that interface, it has to assume that the FORTRAN~77 style is
+to be applied.
+
+\item
+The actual argument could be some element of the array:
+\begin{verbatim}
+      REAL ARRAY(100)
+
+      CALL PRINT( ARRAY(10), 30 )
+      END
+
+      SUBROUTINE PRINT( A, N )
+      INTEGER N
+      REAL A(N)
+      WRITE(*,*) A
+      END
+\end{verbatim}
+
+The call to \verb+PRINT+ passes the array elements 10, 11, ... to the subroutine
+and in the subroutine it is assumed that the array \verb+A+ (its first dummy argument)
+is \verb+N+ (it second dummy argument) elements large. Then we can print the dummy array
+as a whole.
+\end{itemize}
+
+With Fortran we can specify a section of an array, not necessarily a contiguous section:
+\begin{verbatim}
+real :: array(100)
+
+call print( array(10::10) )
+\end{verbatim}
+
+The array section selects elements 10, 20, ... 100, but as the subroutine \verb+PRINT+
+is in old-style FORTRAN, it does not get an \emph{array descriptor}. The compiler
+will have to make a temporary array, copy in the selected elements, call \verb+PRINT+
+and before releasing that temporary array, copy the elements of that temporary
+array into the selected elements. \emph{It does not know the intent of the arguments
+of the subroutine} \verb+PRINT+ \emph{after all!}
+
+
+\subsection{Specific names for intrinsic functions}
+TODO
