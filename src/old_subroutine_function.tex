@@ -1,18 +1,4 @@
 \section{Subroutines and functions}
-Placeholder:
-\begin{verbatim}
-- constants as actual arguments
-- intent
-- checking interfaces
-- entry
-- external, also notation "*tan"
-- Specific names for functions like max() and sin()
-- Alternate return
-- statement functions
-
-\end{verbatim}
-
-\subsection{General remarks}
 Older compilers were not so very sophisticated when it comes to checking the
 actual argument lists of calls to subroutines or functions against the
 dummy (expected) argument lists of these program units. This is partly due
@@ -35,10 +21,25 @@ and functions:
 The dummy argument could be declared as \verb+REAL ARRAY(1)+. This was not
 unusual in programs predating FORTRAN~77, as that introduced the asterisk for
 arrays whose sizes are not defined in the routine perse: \verb+REAL ARRAY(*)+, the
-so-called assumed-size arrays.
+so-called assumed-size arrays. A small example:
+\begin{verbatim}
+      SUBROUTINE PRINT( A, N )
+      INTEGER N
+C
+C     Array declared pre FORTRAN 77:
+C
+      REAL A(1)
+C
+C     Array declared the FORTRAN 77 way:
+C
+C     REAL A(*)
+      ...
+      END
+\end{verbatim}{
 
 In both cases, the routine would have to know what the actual size of the array
-should be. Often, that was done via an extra argument (see for instance \ref{workarrays}).
+should be. Often, that was done via an extra argument like the argument~\verb+N+
+in the example (see for a more elaborate and practical example section \ref{workarrays}).
 
 With Fortran you can use assumed-shape arrays, so that the dimensions of the array
 are passed on automatically. This does require that the interface is explicit. If the
@@ -80,6 +81,244 @@ and before releasing that temporary array, copy the elements of that temporary
 array into the selected elements. \emph{It does not know the intent of the arguments
 of the subroutine} \verb+PRINT+ \emph{after all!}
 
+Marking the \emph{intent} of arguments has at least two advantages:
+documenting the intended use of the argument and making certain optimisations
+possible. Like in the above example: copying back is not necessary if the argument
+is \verb+intent(in)+.
+
 
 \subsection{Specific names for intrinsic functions}
-TODO
+With the advent of FORTRAN 77 the language gained generic names of such intrinsic
+functions as \verb+MAX+ and \verb+SIN+. Pre-FORTRAN~77 code uses specific names
+to distinguish the types of the arguments and the result. Thus:
+\begin{itemize}
+\item
+The minimum and maximum functions for integers were \verb+MIN0+ and \verb+MAX0+.
+\item
+The minimum and maximum functions for single-precision reais were \verb+AMIN1+ and \verb+AMAX1+.
+\item
+The minimum and maximum functions for double-precision reais were \verb+DMIN1+ and \verb+DMAX1+.
+\item
+If you wanted an \emph{integer} result from a list of \emph{reals}, then the function names
+were \verb+MIN1+ and \verb+MAX1+. But a \emph{real} result from a list of \emph{integers}
+is returned by \verb+AMIN0+ and \verb+AMAX0+.
+\item
+For the trigonometric functions: \verb+SIN+, \verb+DSIN+ and \verb+CSIN+ would return
+the sine of respectively a single-precision real, a double-precision real and a complex value.
+\end{itemize}
+
+The Internet, as usual, will provide detailed information on the various intrinsic functions.
+
+Sometimes, these specific names are required if you want to pass them as arguments to a
+routine. The best way is to avoind doing so and write a small helper function instead,
+as these specific names are deprecated and may evne be removed from the standard altogether.
+
+
+\subsection{The EXTERNAL statement}
+Consider the following program:
+%
+\begin{verbatim}
+      PROGRAM USEFNC
+      REAL A
+      n = 10
+      WRITE(*,*) A(N)
+
+      END
+\end{verbatim}
+
+You cannot build it, because it refers to a \emph{function} \verb+A+ which is external
+to the program. You get an error about an unresolved symbol or a similar message.
+If you add the definition of a function \verb+A+ to the build step, then, of course,
+that symbol is resolved and the program can be built.
+
+But the more important thing to notice is that the call to \verb+A+ is indistinguishable
+as it is from an array \verb+A+. To make the distinction clear, you can use the
+\verb+EXTERNAL+ statement. This is also useful for arguments you pass that are actually
+procedures (see \verb+integral.f+):
+%
+\begin{verbatim}
+      PROGRAM CALC
+      REAL A, INTGRL
+      EXTERNAL A, INTGRL
+
+      XBEGIN = 0.0
+      XEND   = 1.0
+      WRITE(*,*) INTGRL(A, XBEGIN, XEND)
+      END
+
+      FUNCTION A(X)
+      REAL X
+      A = X ** 2
+      END
+
+      REAL FUNCTION INTGRL(A, XB, XE)
+      REAL A, XB, XE
+      EXTERNAL A
+      REAL DX
+
+      DX     = (XE - XB) / 10.0
+      INTGRL = 0.0
+      DO 100 I = 1,10
+          X      = XBEGIN + (I-1) * DX
+          INTGRL = INTGRL + A(X)
+  100 CONTINUE
+
+      INTGRL = INTGRL * DX
+      END
+\end{verbatim}
+%
+Note that the declaration of \verb+INTGRL+ as a \emph{real} function is required
+because the implicit typing rules would otherwise make it an integer, with very
+strange results.
+
+
+\subsection{Statement functions}
+Short functions like the function \verb+A+ in the previous section can also be
+written as so-called \emph{statement functions}. These appear among the general
+declarations:
+\begin{verbatim}
+      PROGRAM CALC
+      REAL INTGRL
+C
+C Use a statement function instead of a regular function
+C
+      A(X) = X ** 2
+
+      XBEGIN = 0.0
+      XEND   = 1.0
+
+      INTGRL = 0.0
+
+      DO 100 I = 1,10
+          X      = XBEGIN + (I-1) * DX
+          INTGRL = INTGRL + A(X)
+  100 CONTINUE
+
+      INTGRL = INTGRL * DX
+      WRITE(*,*) INTGRL(A, XBEGIN, XEND)
+      END
+\end{verbatim}
+
+As a statement function is not allowed as an actual argument, the integration
+is now moved into the program itself instead implemented in a separate
+function.
+
+Statement functions can be useful to abbreviate expressions that appear at
+multiple locations in the code of a routine, but \emph{internal procedures}
+in Fortran are much more useful and recognisable.
+
+
+\subsection{Constant values as actual arguments}
+A peculiar phenomenon was possible in the old days: you could change the
+value of a literal constant. That is: if you were sloppy, you could change the
+value of, say, \verb+10+ into \verb+20+:
+\begin{verbatim}
+      PROGRAM CONST
+
+      CALL DOUBLE( 10 )
+      WRITE(*,*) 10
+      END
+
+      SUBROUTINE DOUBLE( X )
+      INTEGER X
+
+      X = 2 * X
+      END
+\end{verbatim}
+
+Nowadays, compilers will not pass the literal constant itself but a copy or something similar, so that
+the above example will do no harm. But if the implementation is such that \verb+10+
+is actually a memory address that is readable and writeable, then havoc is raised with, as
+a bonus, difficult to track bugs.
+
+
+\subsection{The ENTRY statement}
+FORTRAN offered the \verb+ENTRY+ statement to provide alternative entries into a subroutine or function.
+Such statement make it possible to call the procedure with a different argument list, for instance.
+A slightly contrived example:
+\begin{verbatim}
+      REAL FUNCTION SETACC( X )
+      REAL X
+
+      REAL SUM
+      SAVE SUM
+
+      SUM    = X
+      SETACC = SUM
+      RETURN
+
+      ENTRY NXTACC( X )
+      REAL X
+
+C
+C     Accumulate to the variable SUM defined in SETACC
+C
+      SUM    = SUM + X
+      NXTACC = SUM
+      END
+\end{verbatim}
+
+With the funcion \verb+SETACC+ you initialise an "accumulator" variable and with \verb+NXTACC+
+you add a new value to it and get the result. In a program you could use it like this (see \verb+accum.f+):
+\begin{verbatim}
+      PROGRAM ACCUM
+      REAL X, SUM
+
+      OPEN( 10, FILE = 'accum.inp' )
+
+      READ( 10, * ) X
+      SUM = SETACC( X )
+
+  100 CONTINUE
+      READ( 10, *, END = 110, ERR = 110 ) X
+      SUM = NXTACC( X )
+      GOTO 100
+
+  110 CONTINUE
+      WRITE(*,*) 'Sum: ', SUM
+      END
+\end{verbatim}
+
+There are doubtless other uses for \verb+ENTRY+, but the Fortran standard offers modules and module
+variables for this sort of things instead.
+
+
+\subsection{Alternative returns}
+A deprecated feature in Fortran, alternative returns provide a means to
+transfer the program control from a routine to its caller to another
+statement than the one following. This feature could be used for
+error handling (see \verb+errors.f+):
+\begin{verbatim}
+      PROGRAM ERRORS
+      REAL X
+
+      X = 2.0
+      CALL PRSQRT( X, *900 )
+
+      X = -1.0
+      CALL PRSQRT( X, *900 )
+      STOP
+C
+C     Handle any errors
+C
+  900 CONTINUE
+      WRITE(*,*) 'Routine PRSQRT expects a positive argument'
+
+      END
+
+      SUBROUTINE PRSQRT( X, * )
+      REAL X
+
+      IF ( X .GE. 0.0 ) THEN
+          WRITE(*,*) 'The square root of ', X, ' is ', SQRT(X)
+      ELSE
+          RETURN 1
+      ENDIF
+      END
+\end{verbatim}
+
+Note: because the feature is deprecated (obsolescent), compilers may not properly check that
+the actual call has a right number of statement labels in the interface. In most cases
+a simple return code works quite as well (the section \ref{jumpingtoend} offers more
+on the subject).
+
