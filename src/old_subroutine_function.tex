@@ -14,6 +14,7 @@ or pass scalars to array dummy arguments. As long as you remain with the allotte
 memory, there should be no problem.
 
 \subsection{Passing arrays}
+\label{passingarrays}
 Several surprising idioms are connected to the passing of arrays to subroutines
 and functions:
 \begin{itemize}
@@ -35,7 +36,7 @@ C
 C     REAL A(*)
       ...
       END
-\end{verbatim}{
+\end{verbatim}
 
 In both cases, the routine would have to know what the actual size of the array
 should be. Often, that was done via an extra argument like the argument~\verb+N+

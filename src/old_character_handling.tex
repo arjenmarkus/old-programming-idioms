@@ -1,7 +1,95 @@
 \section{Handling characters}
+With the FORTRAN 77 character strings were introduced. Before that there was very little
+that could be done with characters, unless they represented numbers. It was the era
+of the hollerith constants. But FORTRAN~77 only introduced fixed-length strings.
+Only with the advent of Fortran~2003 did the language acquire the possibility to
+work with strings of dynamic lengths.
+
+
+\subsection{Hollerith constants}
+The main use you are likely to encounter of hollerith constants is in format statements or
+as constant strings passed to a subrotuine. Here is
+a code fragment from a library for special functions, like the Bessel functions and
+many others:
+\begin{verbatim}
+c
+      if (ntk0.ne.0) go to 10
+      ntk0 = inits (bk0cs, 11, 0.1*r1mach(3))
+      xsml = sqrt (4.0*r1mach(3))
+      xmax = -log(r1mach(1))
+      xmax = xmax - 0.5*xmax*log(xmax)/(xmax+0.5) - 0.01
+c
+ 10   if (x.le.0.) call seteru (29hbesk0   x is zero or negative, 29,
+     1  2, 2)
+      if (x.gt.2.) go to 20
+\end{verbatim}
+
+The construction \verb+29hbesk0   x is zero or negative+ is a hollerith constant, in
+this case, it is 29 characters long and passed to a subroutine that will print an
+error message. The signature of the subroutine is:
+\begin{verbatim}
+      subroutine seteru (messg, nmessg, nerr, iopt)
+      common /cseter/ iunflo
+      integer messg(1)
+      data iunflo / 0 /
+\end{verbatim}
+
+So the hollerith string is stored in an integer array\verb+messg+, but note:
+\begin{itemize}
+\item
+The size of the array is defined as 1, because there was no concept of an assumed-size array
+before FORTRAN~77 (see section \ref{passingarrays}).
+\item
+The variable \verb+iunfo+ is apparently initialised in an ordinary \verb+DATA+ statement,
+even though it is contained in a \verb+COMMON+ block (see section \ref{blockdata}).
+\item
+The code is written in lower-case. Strictly speaking that is not conforming to the standard.
+\item
+The array \verb+messg+ in turn is passed onto another routine, \verb+seterr+, but the code
+for that routine simple prints "Error!" and we are not shown how to deal with the integer
+array that holds the character string.
+\end{itemize}
+
+Modernising holleriths that only serve as static strings is simple: turn them into ordinary
+strings. However, sometimes they were used to manipulate string data and then you need
+to understand exactly what is going on, especially because vendor-specific methods were
+typically used and the storage of hollerith constants was non-portable \cite{hollerith}.
+
+\emph{Note to self: https://en.wikipedia.org/wiki/Hollerith\_constant}
+
+An example of manipulating character strings pre-FORTRAN~77 is given here, shamelessly
+copied from a Fortran discourse thread. The code fragment uses compiler-specific
+statements \verb+DECODE+ and \verb+ENCODE+ to move characters to and from integers:
+\begin{verbatim}
+      CHARACTER S*6 / '987654' /, T*6
+      INTEGER V(3)*4
+      DECODE( 6, '(3I2)', S ) V
+      WRITE( *, '(3I3)') V
+      ENCODE( 6, '(3I2)', T ) V(3), V(2), V(1)
+      PRINT *, T
+      END
+\end{verbatim}
+
+As stated in the thread:
+\begin{quote}
+The above program has this output:
+
+\begin{verbatim}
+98 76 54
+547698
+\end{verbatim}
+
+The DECODE reads the characters of S as 3 integers, and stores them into V(1), V(2), and V(3).
+The ENCODE statement writes the values V(3), V(2), and V(1) into T as characters; T then contains '547698'.
+\end{quote}
+
+
+\emph{Note to self: https://fortran-lang.discourse.group/t/code-that-baffles-me-could-someone-please-explain/6005}
+
+
+\subsection{Fixed-length character arguments}
 TODO
 
-Also: interfacing to C
 
-Also: using fixed character lengths in argument declarations
-
+\subsection{Interfacing to C: hidden arguments}
+TODO
