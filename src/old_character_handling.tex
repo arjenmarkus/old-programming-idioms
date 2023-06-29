@@ -3,12 +3,12 @@ With the FORTRAN 77 character strings were introduced. Before that there was ver
 that could be done with characters, unless they represented numbers. It was the era
 of the hollerith constants. But FORTRAN~77 only introduced fixed-length strings.
 Only with the advent of Fortran~2003 did the language acquire the possibility to
-work with strings of dynamic lengths.
+work with strings of dynamically allocatable lengths.
 
 
 \subsection{Hollerith constants}
 The main use you are likely to encounter of hollerith constants is in format statements or
-as constant strings passed to a subrotuine. Here is
+as constant strings passed to a subroutine. Here is
 a code fragment from a library for special functions, like the Bessel functions and
 many others:
 \begin{verbatim}
@@ -34,7 +34,7 @@ error message. The signature of the subroutine is:
       data iunflo / 0 /
 \end{verbatim}
 
-So the hollerith string is stored in an integer array\verb+messg+, but note:
+So the hollerith string is stored in an integer array \verb+messg+, but note:
 \begin{itemize}
 \item
 The size of the array is defined as 1, because there was no concept of an assumed-size array

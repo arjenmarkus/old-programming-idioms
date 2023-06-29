@@ -18,7 +18,7 @@ output files. FORTRAN defined, roughly, three types of files:
 Text files meant to read or edited by humans. These are known as \emph{formatted files}.
 \item
 Binary files with a record structure of sorts, so that you could read a part of the
-record and then automatically jump to the next. These are \emph{unformatted, sequential files}.
+record and then automatically jump to the next. These are \emph{unformatted sequential files}.
 They are compact and might be considered \emph{binary} files.
 \item
 Binary files with records that have a fixed length and where you can position the \verb+READ+
@@ -27,7 +27,7 @@ Actually, there are also formatted direct-access files, but these are seldom use
 \end{itemize}
 
 Input and output in FORTRAN was always oriented towards records. For instance, if you read a number
-from a formatted file, then the read position is automatically move to the start of the next line,
+from a formatted file, then the read position is automatically moved to the start of the next line,
 independent of the amount of data left on the previous line.
 
 Similarly, writing to a file always produced a complete line. And the next write action would start
@@ -47,6 +47,14 @@ The unit number \verb+6+ was typically connected to the terminal:
 \begin{verbatim}
       WRITE(6,*) 'Enter a number:'
 \end{verbatim}
+\item
+As an alternative you can also use the \verb+PRINT+ statement: it always writes to
+standard ouput:
+\begin{verbatim}
+*     Write to the terminal ...
+      PRINT(*) 'Current value: ', value
+\end{verbatim}
+
 \item
 The unit number \verb+5+ was typically connected to the keyboard:
 \begin{verbatim}
@@ -73,7 +81,7 @@ similar ones for standard output and error.
 Printers of old had a simple system to control the positioning of the output on the paper:
 a character in the first column of a line to be output determined what would happen. Here
 are the (common) codes:
-\begin{table}[h]
+\begin{table}[h!]
 \begin{tabular}{ll}
 \hline
 Character    & Meaning \\
@@ -111,13 +119,13 @@ implies, you can jump around in the file at will.
 The record length is usually specified in \emph{bytes} but some compilers, like Intel Fortran,
 use \emph{words} as the unit. Where there was no way to know programmatically in FORTRAN what
 size was meant, since Fortran 2003, the intrinsic module \verb+iso_fortran_env+ contains the parameter \verb+file_storage_unit+
-which is the size in bits.
+which is the size in \emph{bits}.
 \end{itemize}
 
 Direct-access files, due to their simplicity, are compact and portable, as the structure of
-unformatted files depends on the compiler that was used for building the program (see below).
+unformatted sequential files depends on the compiler that was used for building the program (see below).
 
-The main issues that makes these files non-portables are the binary representation of the
+The main issues that make these files non-portable are the binary representation of the
 numbers they contain. Nowadays, the main variation is the \emph{endianness}: the order of the
 bytes that make up the number.
 
@@ -196,6 +204,7 @@ record:
   120 CONTINUE
 
 *
+* GOTO THE START AND THEN
 * READ THE DATA - IN REVERSE ORDER
 *
       REWIND( 10 )
@@ -216,7 +225,8 @@ record:
 \end{verbatim}
 
 Reading the first record works, but it fails on the second, as the program
-tries to read 10 values, whereas the record only contain two (the gfortran was used):
+tries to read 10 values (the whole array!), whereas the record only contain two
+(the gfortran compiler was used):
 
 \begin{verbatim}
    11.0000000

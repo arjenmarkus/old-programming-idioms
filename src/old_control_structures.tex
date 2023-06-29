@@ -1,7 +1,7 @@
 \section{Control structures}
 FORTRAN came with a small number of control constructs and it was quite usual to construct
 other control flows via \verb+IF+ and \verb+GOTO+ statements. It inherited some constructs
-from its predecessors that are very uncommon nowadays: the arithmetic (or three=way) \verb+IF+ and the
+from its predecessors that are very uncommon nowadays: the arithmetic (or three-way) \verb+IF+ and the
 computed \verb+GOTO+, as well as the \verb+ASSIGN+ statement. This part of the document
 highlights these ancient idioms.
 
@@ -94,9 +94,12 @@ condition, whether it is put at the start or at the end of the \verb+DO+ loop.
 Many compilers still provide an option to allow for the FORTRAN 66 semantics,\cite{Intel}
 which includes this feature:\footnote{I could not find such a flag for the
 gfortran compiler, but for Intel Fortran oneAPI it is -f66.}
+
+NOTE: revise this text!
 %
 \begin{verbatim}
 * With the right compiler options, print this line once!
+* (Note: FORTRAN 77, not strictly FORTRAN 66)
       DO 110 I = 1,0
           WRITE(*,*) 'FORTRAN 66: ', I
   110 CONTINUE

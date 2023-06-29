@@ -9,9 +9,13 @@ or reals, because you are simply writing them to some binary file, then one
 routine would suffice to take care of both types (perhaps even including double
 precision numbers).
 
+NOTE: example
+
 A more common situation: allow one-dimensional arrays to be used as two-dimensional
 or pass scalars to array dummy arguments. As long as you remain with the allotted
 memory, there should be no problem.
+
+NOTE: example
 
 \subsection{Passing arrays}
 \label{passingarrays}
@@ -96,9 +100,9 @@ to distinguish the types of the arguments and the result. Thus:
 \item
 The minimum and maximum functions for integers were \verb+MIN0+ and \verb+MAX0+.
 \item
-The minimum and maximum functions for single-precision reais were \verb+AMIN1+ and \verb+AMAX1+.
+The minimum and maximum functions for single-precision reals were \verb+AMIN1+ and \verb+AMAX1+.
 \item
-The minimum and maximum functions for double-precision reais were \verb+DMIN1+ and \verb+DMAX1+.
+The minimum and maximum functions for double-precision reals were \verb+DMIN1+ and \verb+DMAX1+.
 \item
 If you wanted an \emph{integer} result from a list of \emph{reals}, then the function names
 were \verb+MIN1+ and \verb+MAX1+. But a \emph{real} result from a list of \emph{integers}
@@ -112,7 +116,16 @@ The Internet, as usual, will provide detailed information on the various intrins
 
 Sometimes, these specific names are required if you want to pass them as arguments to a
 routine. The best way is to avoind doing so and write a small helper function instead,
-as these specific names are deprecated and may evne be removed from the standard altogether.
+as these specific names are deprecated and may even be removed from the standard altogether.
+
+\subsubsection{A curious function: DIM}
+Here is a function that is defined by the FORTRAN~77 standard but whose usefulness
+seems questionable -- at least I have never actually seen it used:
+%
+\begin{verbatim}
+C     If X > Y, then return the difference, otherwise zero.
+      POSDIF = DIM(X,Y)
+\end{verbatim}
 
 
 \subsection{The EXTERNAL statement}
@@ -201,7 +214,7 @@ C
 \end{verbatim}
 
 As a statement function is not allowed as an actual argument, the integration
-is now moved into the program itself instead implemented in a separate
+is now moved into the program itself instead of being implemented in a separate
 function.
 
 Statement functions can be useful to abbreviate expressions that appear at
@@ -235,7 +248,7 @@ a bonus, difficult to track bugs.
 
 \subsection{The ENTRY statement}
 FORTRAN offered the \verb+ENTRY+ statement to provide alternative entries into a subroutine or function.
-Such statement make it possible to call the procedure with a different argument list, for instance.
+Such statement makes it possible to call the procedure with a different argument list, for instance.
 A slightly contrived example:
 \begin{verbatim}
       REAL FUNCTION SETACC( X )
@@ -282,6 +295,8 @@ you add a new value to it and get the result. In a program you could use it like
 
 There are doubtless other uses for \verb+ENTRY+, but the Fortran standard offers modules and module
 variables for this sort of things instead.
+
+NOTE: Function returning real and entry returning integer.
 
 
 \subsection{Alternative returns}
