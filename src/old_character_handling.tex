@@ -88,8 +88,107 @@ The ENCODE statement writes the values V(3), V(2), and V(1) into T as characters
 
 
 \subsection{Fixed-length character arguments}
-TODO
+Just as with arrays you specify a fixed length for character arguments. The argument will act as if it actually
+holds strings of the specified length, but other than with arrays, a mismatch with the actual argument may lead
+to strange results. Here is a small example:
+\begin{verbatim}
+C234567
+      PROGRAM SHWSTR
+      CHARACTER*10 STRING(5)
 
+      STRING(1) = 'ABCDEFGHIJ'
+      STRING(2) = '1234567890'
+      STRING(3) = '?         '
+      STRING(4) = '?         '
+
+      CALL STR3(  STRING, 2 )
+      CALL STR13( STRING, 2 )
+      END
+      SUBROUTINE STR3( STRING, N )
+      CHARACTER*3 STRING(N)
+      INTEGER I
+      DO I = 1,N
+          WRITE(*,*) I, STRING(I)
+      ENDDO
+      END
+      SUBROUTINE STR13( STRING, N )
+      CHARACTER*13 STRING(N)
+      INTEGER I
+      DO I = 1,N
+          WRITE(*,*) I, STRING(I)
+      ENDDO
+      END
+\end{verbatim}
+
+The output of the program is:
+\begin{verbatim}
+           1 ABC
+           2 DEF
+           1 ABCDEFGHIJ123
+           2 4567890?
+\end{verbatim}
+
+Since character strings are laid out in memory in a contiguous fashion, the mismatch causes the
+strings as seen in the subroutines to be just strings of the given length, \emph{independent therefore}
+of the strings in the calling program unit.
+
+In general, it is best to use assumed-length strings: \verb+CHARACTER*(*) STRING+ or, as Fortran
+would have it: \verb+character(len=*) :: string+.
 
 \subsection{Interfacing to C: hidden arguments}
-TODO
+Since a subroutine or function that has one or more character arguments must somehow "know" the
+length of the actual arguments (otherwise the assumed-length declaration would not work),
+that information is passed from the caller to the callee. The method is not prescribed by the
+standard, but there exist at least two methods, which are both invisible from the FORTRAN side.
+But if you interface with C routines, then it becomes important to know which one is actually
+used: on the C side a hidden argument that gives the length is visible and this extra argument
+is either directly after the character argument or after all the regular arguments.
+
+This is one of the difficulties that existed in FORTRAN in dealing with other languages, notably~C.
+
+Here is an illustration. The program calls a C routine that accepts a character string array,
+much as in the previous section:
+\begin{verbatim}
+C234567
+      PROGRAM SHWSTR
+      CHARACTER*10 STRING(5)
+
+      STRING(1) = 'ABCDEFGHIJ'
+      STRING(2) = '1234567890'
+      STRING(3) = '?         '
+      STRING(4) = '?         '
+
+      CALL STRC(  STRING, 2 )
+      END
+\end{verbatim}
+
+The C routine does very little, but looks like this (the declaration is more important than
+the body), if the hidden argument comes right after the string argument:
+\begin{verbatim}
+/* Hidden argument directly after the associated argument */
+#define STRC ...
+void STRC( char *string, int lenstr, int *n ) {
+    ...
+}
+\end{verbatim}
+
+\noindent and otherwise like this:
+
+\begin{verbatim}
+/* Hidden argument after all ordinary arguments */
+#define STRC ...
+void STRC( char *string, int *n, int lenstr ) {
+    ...
+}
+\end{verbatim}
+
+Note that:
+\begin{itemize}
+\item
+We define the name via a macro, \verb+STRC+, because the actual name depends on the FORTRAN compiler.
+With Fortran 2003, this problem is solved via the \verb+bind(C)+ attribute, with or without the \verb+name = "..."+ clause.
+\item
+The hidden argument is a \emph{value}, not a pointer like the size parameter $n$. In FORTRAN such arguments
+cannot be expressed, so that more often than not the interfacing with C requires an intermediate "wrapper" routine
+to translate such incompatibilities. Again, Fortran~2003 solves much of this in a standardized way.
+\end{itemize}

@@ -127,6 +127,11 @@ C     If X > Y, then return the difference, otherwise zero.
       POSDIF = DIM(X,Y)
 \end{verbatim}
 
+This is merely to warn that there may other functions and subroutines to be found
+in old FORTRAN code that have lost their meaning or have been replaced by others.
+Compiler-specific procedures that have been replaced by standard facilities include
+\verb+SYSTEM+ to run an external program and various functions to get the system time.
+
 
 \subsection{The EXTERNAL statement}
 Consider the following program:
@@ -184,6 +189,8 @@ procedures (see \verb+integral.f+):
 Note that the declaration of \verb+INTGRL+ as a \emph{real} function is required
 because the implicit typing rules would otherwise make it an integer, with very
 strange results.
+
+NOTE: EXTERNAL for an intrinsic procedure
 
 
 \subsection{Statement functions}
