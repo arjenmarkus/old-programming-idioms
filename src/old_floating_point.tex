@@ -18,21 +18,32 @@ to indicate the precision:
 *
 *     Single precision real
 *
-      real*4 x
+      REAL*4 X
 *
-*     Double precision real
+*     DOUBLE PRECISION REAL
 *
-      real*8 y
+      REAL*8 Y
 *
 *     Single precision complex
 *
-      complex*8 z
+      COMPLEX*8 Z
 \end{verbatim}
 The number indicates the number of bytes that a real would occupy. This has never been
 part of a FORTRAN or Fortran standard. The \emph{kind} feature in Fortran is much more
 flexible, as it can capture aspects of the representation of floating-point numbers
 beyond mere storage.\footnote{The current standard defines a general model for representing
 real numbers. This encompasses the IEEE formats, but is in fact more general.}
+
+While FORTRAN has supported complex numbers for a very long time, it did not standardise
+double-precision complex numbers. Compiler extensions like \verb+COMPLEX*16+ often
+filled that gap. With Fortran, the \emph{kind} feature is used to achieve this:
+\begin{verbatim}
+integer, parameter :: dp = kind(1.d0)
+complex(kind=dp)   :: z
+\end{verbatim}
+
+The kind refers to the underlying floating-point number, not the storage, like with
+the \verb+COMPLEX*16+ type.
 
 \begin{quote}
 \emph{Note:} Such notation is sometimes used for integers and logicals as well. Again
@@ -88,11 +99,13 @@ numbers as double-precision.
 Another thing to keep in mind is that many compilers, both new and old, allow for
 compiler options that turn the \emph{default} precision for a variable declared as \verb+real+
 into \emph{double precision}. If a program relies on this behaviour, then you need to
-carefully check the code.
+carefully check the code.\footnote{In general, using these compile options is
+considered a bad idea. It is all too easy to forget them when building the program or library.}
+
 
 \subsection{Input in the absence of a decimal point}
 Disk storage nowadays is all but endless, but this luxury did not exist in the old days.
-This may have been the reason for a little known or used feature in input of real numbers:
+This may have been the reason for a little known or used feature in the input of real numbers:
 if a string representing a real number does not contain a decimal point, then the \emph{input~format}
 may insert it.
 

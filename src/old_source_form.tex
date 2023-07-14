@@ -20,11 +20,11 @@ a fairly recent feature of computer file systems. Older systems had different co
 To elaborate a bit on these file extensions:
 \begin{itemize}
 \item
-Fixed form is often identified by \verb+.f+ or for some old compilers on Windows \verb+.for+, but
+Fixed form is often identified by \verb+.f+ or for some compilers on Windows \verb+.for+, but
 that is not mandated by any standard and compilers often support options to specify what the
 source form is, if the extension is misleading.
 \item
-On file systems where file names are case-sensitive, such Linux, an extension \verb+.F+ or \verb+.F90+
+On file systems where file names are case-sensitive, such as Linux, an extension \verb+.F+ or \verb+.F90+
 is often meant to automatically invoke a preprocessor like C's preprocessor. Alternatively, you
 can also use compiler options to invoke the preprocessor explicitly.
 \item
@@ -135,7 +135,7 @@ O, P, ... Z would have the type \verb+DOUBLE PRECISION+, unless explicitly given
 
 \subsection{Special comments: D}
 Sometimes in old code you can see a character "D" in the first column. This is considered a comment line,
-unless you specify a compile option like \verb+/d-lines+ for the Intel Fortran compilers. Not all compilers
+unless you specify a compile option like \verb+-d-lines+ for the Intel Fortran compilers. Not all compilers
 support this, gfortran does not seem to have an option for it. The effect of specifying the relevant
 option is that the line is no longer considered a comment line, but is actual code. If supported by the compiler,
 it is only available for fixed form source.
@@ -181,7 +181,7 @@ You could make the intent clearer using something along these lines (or a modern
       END PROGRAM FIXEDDEBUG
 \end{verbatim}
 
-With FORTRAN the \verb+debug+ parameter was best put in an include file to ensure that every programn unit
+With FORTRAN the \verb+debug+ parameter was best put in an include file to ensure that every program unit
 used the same setting. With Fortran a module containing such a parameter will do.
 
 \begin{quote}
@@ -195,7 +195,7 @@ Besides specific options, most if not all compilers have what are known as \emph
 take the form of a comment with a special format. As they are specific to the compiler, the precise form
 depends on the compiler, as well as what you can do with them. There are also compiler directives that
 are defined as a standard, like the \emph{OpenMP} directives.\footnote{Compiler directives have their
-equivalent in C. There they are called pragmas and function in much the same way.}
+equivalent in C. There they are called pragmas and work in much the same way.}
 
 Here is one example: an implicit way to redefine the default precision for real variables:
 

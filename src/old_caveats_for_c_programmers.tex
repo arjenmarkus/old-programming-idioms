@@ -1,8 +1,130 @@
 \section{Some caveats for programmers coming from C-like languages}
-TODO:
+
+Some features of FORTRAN and indeed Fortran may confuse programmers who are used to C-like
+languages. This section is meant to at least point out a few such features. It is evidently far
+from complete. Since many of these features are common to both FORTRAN and Fortran, I will use the
+word Fortran in this section to mean both versions.
+
+\subsection{Terminology and semantics}
+Fortran uses the term \emph{argument} to indicate the variables that are passed to and from
+subprograms, where C uses the term \emph{parameter}. A \emph{parameter} in Fortran, however,
+is a named constant. In a debugger it is most often not visible at all.
+
+Another thing to watch out for is that a \emph{pointer} in Fortran is not merely a memory
+address, as it is in C. A Fortran pointer holds far more information and it can only point
+to variables that are either themselves pointers or have the \emph{target} attribute.
+
+In C assignment, \verb+a = b+, is actually an operator. In Fortran, it is a statement and
+therefore cannot be put into a combination like: \verb+a = b = c+.
+
+\subsection{Subroutines and functions}
+A function in Fortran always returns a value and you cannot ignore that, like in C. If \verb+f+
+is a function (either in C or Fortran) returning an integer value, then:
+\begin{verbatim}
+     f( x ); /* Ignore the return value */
+\end{verbatim}
+\noindent is valid C, but in Fortran the return value always has to be handled.
+
+The default method for passing variables to subroutines or functions in Fortran is \emph{by reference},
+whereas in C it is \emph{by value}. That means, unless you specify the intent to be \verb+intent(in)+,
+then you can always change the value of the actual variable.\footnote{Intent did not exist in FORTRAN.}
+
+\subsection{Initialisation of variables}
+In C code like:
+\begin{verbatim}
+     int f( int x ) {
+         int y = 1;
+
+         if ( x > 0 ) {
+             y = 0;
+         }
+         return x + y;
+     }
+\end{verbatim}
+
+is simply a short-hand for:
+\begin{verbatim}
+     int f( int x ) {
+         int y ;
+
+         y = 1;
+         if ( x > 0 ) {
+             y = 0;
+         }
+         return x + y;
+     }
+\end{verbatim}
+
+\noindent that is, the variable \verb+y+ is set to 1 at the start of the function every time it is
+called.
+
+The Fortran code that \emph{looks} like exactly this:
+\begin{verbatim}
+     integer function f( x ) {
+         integer, intent(in) :: x
+
+         integer y = 1
+
+         if ( x > 0 ) then
+             y = 0
+         endif
+         f = x + y
+     end function f
+\end{verbatim}
+\noindent behaves in a different way:
+
+\begin{itemize}
+\item
+The local variable \verb+y+ has the value 1 at the start of the program and implicitly has the \verb+save+ attribute,
+so it retains its value.
+\item
+It is \emph{not} reset to 1, unlike in the C version.
+\item
+If an argument \verb+x+ is passed with a positive value, then the variable \verb+y+ is reset to 0 and keeps that
+value from there on. This is a side effect!
+\end{itemize}
+
+In fact the Fortran code is equivalent to:
+\begin{verbatim}
+     int f( int x ) {
+         static int y = 1;
+
+         if ( x > 0 ) {
+             y = 0;
+         }
+         return x + y;
+     }
+\end{verbatim}
+
+\subsection{Handling character strings}
+C does not truly have character strings, it has arrays of characters. As C does not have intrinsic
+features to keep track of the size of an array, it uses a convention to make sure that strings
+are terminated -- the trailing NUL byte. A C program is itself responsible for maintaining this
+NUL byte.
+
+In contrast, Fortran uses strings of a defined length and pads strings with spaces. Thus:
+\begin{verbatim}
+     character(len=10) :: a
+
+     a = '123'
+\end{verbatim}
+
+\noindent means that the \verb+a+ has the value '123_______' (where '_' is used to indicate a space).
+
+This makes programming with strings a lot easier as you can simply rely on the compiler to make
+sure that strings fit into the allotted memory:
 
 \begin{verbatim}
-initialisation of variables
-passing by reference
-character strings filled with spaces
+     character(len=10) :: a, b
+     character(len=15) :: c
+
+     a = '1234567890'
+     b = 'abcdefghij'
+
+     c = a // b
+
+     write(*,*) c
 \end{verbatim}
+
+\noindent will print the string '1234567890abcde', without any concern for the fact that \verb+a // b+
+is longer than the variable \verb+c+ can hold.

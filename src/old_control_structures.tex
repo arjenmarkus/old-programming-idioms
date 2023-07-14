@@ -1,5 +1,5 @@
 \section{Control structures}
-FORTRAN came with a small number of control constructs and it was quite usual to construct
+FORTRAN 77 came with a small number of control constructs and it was quite usual to construct
 other control flows via \verb+IF+ and \verb+GOTO+ statements. It inherited some constructs
 from its predecessors that are very uncommon nowadays: the arithmetic (or three-way) \verb+IF+ and the
 computed \verb+GOTO+, as well as the \verb+ASSIGN+ statement. This part of the document
@@ -88,14 +88,10 @@ the rest of the inner \verb+DO+ loop:
 \end{verbatim}
 %
 In FORTRAN 66 (also known as FORTRAN IV) there was a significant difference with
-the \verb+DO+ loop you find in current Fortran: a \verb+DO+ loop would always
-be run at least once! This is due to the location of the check on the iteration
-condition, whether it is put at the start or at the end of the \verb+DO+ loop.
-Many compilers still provide an option to allow for the FORTRAN 66 semantics,\cite{Intel}
-which includes this feature:\footnote{I could not find such a flag for the
-gfortran compiler, but for Intel Fortran oneAPI it is -f66.}
-
-NOTE: revise this text!
+the \verb+DO+ loop you find in current Fortran: there were a large number of
+constraints and as a curious interaction with the compilers not detecting that
+these constraints were violated, quite often a \verb+DO+ loop would run at least once.
+Consider this code:
 %
 \begin{verbatim}
 * With the right compiler options, print this line once!
@@ -118,8 +114,47 @@ With modern semantics it prints:
  Current value of i:           1
 \end{verbatim}
 %
-This can result in subtle but nasty differences, if you are unaware of what
-was meant!
+This can result in subtle but nasty differences, if you are unaware of this
+"feature",
+
+As Ron Shepard explains on Fortran discourse:
+
+\begin{quote}
+F66 do loops were not directly or specifically required to execute once, rather the
+range parameters were restricted so that a single pass was always executed for conforming
+code. The one-trip execution feature followed indirectly from these constraints. The loop
+in the example code
+
+\begin{verbatim}
+    do i = 1,0
+        write(*,*) 'FORTRAN 66: ', i
+    enddo
+
+    write(*,*) 'Current value of i:', i
+\end{verbatim}
+
+would have been illegal for five reasons. 1)~the do statement would have required an
+integer statement label; the unlabeled do with enddo was not introduced until f90. 2)~the
+termination value m2 is zero. In f66, the m1, m2, and m3 values were all required
+to be greater than zero. 3)~the m1~value must be less than or equal to the m2~value,
+a constraint on the programmer that is violated in this example. 4)~the enddo
+statement did not exist in f66, it would have been a labeled continue statement. 5)~upon
+execution of the loop, the loop control variable i is undefined, so the final write
+statement is referencing an undefined integer.
+
+Many compilers would not diagnose and detect violations to the m1, m2, m3 constraints,
+so they would execute the loop with a single pass. But that was not required or
+specified by the standard, the standard simply stated the requirements which were
+violated by the programmers in these cases.
+
+Of course, the write statements also violate f66 in other ways. 1)~Character constants
+did not exist until f77. 2) List-directed i/o did not exist until f77. 3) The use of * to
+specify the default output logical unit was not defined until f77.
+\end{quote}
+
+Some compilers still provide an option to allow for the FORTRAN 66 semantics,\cite{Intel}
+which includes this feature:\footnote{I could not find such a flag for the
+gfortran compiler, but for Intel Fortran oneAPI it is -f66.}
 
 
 \subsection{Simulating a DO-WHILE loop}
@@ -353,6 +388,7 @@ the same routine. Here is a simple example:
 %
 \begin{verbatim}
       SUBROUTINE( ICASE )
+      SAVE
       A = 1.0
       B = 2.0
       C = 3.0

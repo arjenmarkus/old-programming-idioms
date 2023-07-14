@@ -89,9 +89,29 @@ a flexible reservoir of memory, in much the same way as you have the
 heap nowadays. But this particular use was an extension to the standard.
 
 
-\subsection{More on EQUIVALENCE}
-TODO
+\subsubsection{More on EQUIVALENCE}
+A specific use of the \verb+EQUIVALENCE+ statement is to access
+the binary representation of a (floating-point) number. A concrete
+example is the conversion of big-endian numbers to little-endian
+numbers or vice versa:
+%
+\begin{verbatim}
+      INTEGER      A, B
+      CHARACTER*4  BIG, LITTLE
+      EQUIVALENCE (A, BIG)
+      EQUIVALENCE (B, LITTLE)
+C
+C     Read some number from a file - big endian
+C     and rearrange the bytes
+C
+      READ(10) A
+      LITTLE(1:1) = BIG(4:4)
+      LITTLE(2:2) = BIG(3:3)
+      LITTLE(3:3) = BIG(2:2)
+      LITTLE(4:4) = BIG(1:1)
 
+      WRITE(*,*) 'Value is: ', B
+\end{verbatim}
 
 \subsection{The SAVE statement}
 According to the FORTRAN standard a local variable in a function or
@@ -192,7 +212,7 @@ There is some peculiar syntax involved:
       DATA X / 1.0, 98*0.0, 100.0 /
 \end{verbatim}
 
-You can repeat values in much the same way as with edit descriptors
+You can repeat values in a somewhat similar way as with edit descriptors
 in format statements: a count followed by an asterisk (*) and the value
 to be repeated. It is also possible to use implied do-loops:
 %
@@ -235,7 +255,7 @@ program data_stmt
     real    :: array(1000000)
 
     data (array(i), i = 1,size(array),2) / 500000*1.0 /
-   data (array(i), i = 2,size(array),2) / 500000*2.0 /
+    data (array(i), i = 2,size(array),2) / 500000*2.0 /
 
     !
     ! Alternative
@@ -256,7 +276,7 @@ statements.
 
 
 \subsection{Initialising variables in COMMON blocks: BLOCK DATA}
-label{blockdata}
+\label{blockdata}
 The \verb+DATA+ statement plays an important role when it comes to initialising
 variables in a \verb+COMMON+ block. Since the \verb+COMMON+ blocks usually
 appear in more than one subprogram (main program, subroutines, functions),

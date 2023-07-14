@@ -7,7 +7,7 @@ C
       OPEN( 10, FILE = 'accum.inp' )
 
       READ( 10, * ) X
-      SUM = SETACC( X )
+      SUM = SETACC( X, 0.0 )
 
   100 CONTINUE
       READ( 10, *, END = 110, ERR = 110 ) X
@@ -18,12 +18,12 @@ C
       WRITE(*,*) 'Sum: ', SUM
       END
 
-      REAL FUNCTION SETACC( X )
-      REAL X
+      REAL FUNCTION SETACC( X, START )
+      REAL X, START
       REAL SUM
       SAVE SUM
 
-      SUM    = X
+      SUM    = START + X
       SETACC = SUM
       RETURN
 

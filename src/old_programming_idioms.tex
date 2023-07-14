@@ -29,6 +29,9 @@ used in the past decades and present contemporary equivalents or alternatives.
 Attempts are made to present them in a systematic way, but that mostly means grouping
 related topics.
 
+Of course, a document like this can hardly be complete\, but hopefully it is
+useful enough.
+
 \input{old_source_form}
 \input{old_subroutine_function}
 \input{old_floating_point}
@@ -42,45 +45,51 @@ related topics.
 \section{Subjects}
 \begin{verbatim}
 - array(*) versus array(:)
-- array(10) as the starting point
 - history of computers:
    - hardware
    - memory management
    - tools like source code control systems
    - connections between computers, Internet
-- equivalence
-- constants as actual arguments
-- intent
-- temporary arrays - non-contiguous arrays
-- implicit types
-- double precision versus kind
-- checking interfaces
-- separate compilations, the misunderstanding of one routine per file
-- fixed form and spaces
-- standard input and output
-- LU-numbers 5 and 6 (and 7)
 - command-line arguments for file names
-- real do-variables
-- entry
-- statement functions
-- six characters
 - numerical binary representations versus IEEE (IBM, Cray, Convex)
-- big-endian and little-endian
-- double complex
-- unformatted versus binary files
 - list-directed input and output - also: /
 - narrow formats (?)
 - use of d00 in input
 - Cray pointers
-- uppercase/lowercase letters
-- D as comment character
 - external, also notation "*tan"
 - FORTRAN 66 semantics: OPEN - STATUS = 'NEW' as default.
 - Effect of BLANK = 'ZERO' versus BLANK = 'NULL'
-- Specific names for functions like max() and sin()
-- Alternate return
 - Equating logicals: logical x, y; if ( x .eq. y ) then
 - r1mach and friends
+- Declaring an argument to be a scalar but using it as an array
+- character*1 a*2
+\end{verbatim}
+
+Done:
+\begin{verbatim}
+- intent
+- checking interfaces
+- equivalence
+- big-endian and little-endian
+- double complex
+- double precision versus kind
+- temporary arrays - non-contiguous arrays
+- six characters
+- constants as actual arguments
+- fixed form and spaces
+- array(10) as the starting point
+- implicit types
+- separate compilations, the misunderstanding of one routine per file
+- LU-numbers 5 and 6 (and 7)
+- standard input and output
+- real do-variables
+- entry
+- statement functions
+- unformatted versus binary files
+- uppercase/lowercase letters
+- D as comment character
+- Specific names for functions like max() and sin()
+- Alternate return
 - Hollerith
 - DECODE/ENCODE:
 

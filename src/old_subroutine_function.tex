@@ -66,7 +66,7 @@ The actual argument could be some element of the array:
       END
 \end{verbatim}
 
-The call to \verb+PRINT+ passes the array elements 10, 11, ... to the subroutine
+The call to \verb+PRINT+ passes the array elements 10, 11, ... of \verb+ARRAY+ to the subroutine
 and in the subroutine it is assumed that the array \verb+A+ (its first dummy argument)
 is \verb+N+ (it second dummy argument) elements large. Then we can print the dummy array
 as a whole.
@@ -115,7 +115,7 @@ the sine of respectively a single-precision real, a double-precision real and a 
 The Internet, as usual, will provide detailed information on the various intrinsic functions.
 
 Sometimes, these specific names are required if you want to pass them as arguments to a
-routine. The best way is to avoind doing so and write a small helper function instead,
+routine. The best way is to avoid doing so and write a small helper function instead,
 as these specific names are deprecated and may even be removed from the standard altogether.
 
 \subsubsection{A curious function: DIM}
@@ -127,7 +127,7 @@ C     If X > Y, then return the difference, otherwise zero.
       POSDIF = DIM(X,Y)
 \end{verbatim}
 
-This is merely to warn that there may other functions and subroutines to be found
+This is merely to warn that other functions and subroutines may be found
 in old FORTRAN code that have lost their meaning or have been replaced by others.
 Compiler-specific procedures that have been replaced by standard facilities include
 \verb+SYSTEM+ to run an external program and various functions to get the system time.
@@ -145,13 +145,13 @@ Consider the following program:
       END
 \end{verbatim}
 
-You cannot build it, because it refers to a \emph{function} \verb+A+ which is external
+You cannot build it by itself, because it refers to a \emph{function} \verb+A+ which is external
 to the program. You get an error about an unresolved symbol or a similar message.
 If you add the definition of a function \verb+A+ to the build step, then, of course,
 that symbol is resolved and the program can be built.
 
 But the more important thing to notice is that the call to \verb+A+ is indistinguishable
-as it is from an array \verb+A+. To make the distinction clear, you can use the
+from using \verb+A+ as an array. To make the distinction clear, you can use the
 \verb+EXTERNAL+ statement. This is also useful for arguments you pass that are actually
 procedures (see \verb+integral.f+):
 %
@@ -258,13 +258,13 @@ FORTRAN offered the \verb+ENTRY+ statement to provide alternative entries into a
 Such statement makes it possible to call the procedure with a different argument list, for instance.
 A slightly contrived example:
 \begin{verbatim}
-      REAL FUNCTION SETACC( X )
-      REAL X
+      REAL FUNCTION SETACC( X, START )
+      REAL X, START
 
       REAL SUM
       SAVE SUM
 
-      SUM    = X
+      SUM    = START + X
       SETACC = SUM
       RETURN
 
@@ -288,7 +288,7 @@ you add a new value to it and get the result. In a program you could use it like
       OPEN( 10, FILE = 'accum.inp' )
 
       READ( 10, * ) X
-      SUM = SETACC( X )
+      SUM = SETACC( X, 0.0 )
 
   100 CONTINUE
       READ( 10, *, END = 110, ERR = 110 ) X
@@ -303,7 +303,9 @@ you add a new value to it and get the result. In a program you could use it like
 There are doubtless other uses for \verb+ENTRY+, but the Fortran standard offers modules and module
 variables for this sort of things instead.
 
-NOTE: Function returning real and entry returning integer.
+As the \verb+ENTRY+ statement only defines the name and the argument list, it serves as a subroutine,
+if its corresponding program unit is a subroutine or as a function of the same type. Its argument list
+can, however, differ.
 
 
 \subsection{Alternative returns}
@@ -341,7 +343,7 @@ C
 \end{verbatim}
 
 Note: because the feature is deprecated (obsolescent), compilers may not properly check that
-the actual call has a right number of statement labels in the interface. In most cases
+the actual call has the right number of statement labels in the interface. In most cases
 a simple return code works quite as well (the section \ref{jumpingtoend} offers more
 on the subject).
 
