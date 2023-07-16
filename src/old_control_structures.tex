@@ -90,7 +90,7 @@ the rest of the inner \verb+DO+ loop:
 In FORTRAN 66 (also known as FORTRAN IV) there was a significant difference with
 the \verb+DO+ loop you find in current Fortran: there were a large number of
 constraints and as a curious interaction with the compilers not detecting that
-these constraints were violated, quite often a \verb+DO+ loop would run at least once.
+these constraints were violated, quite often a \verb+DO+ loop would run at least once \cite{F66DoLoops}.
 Consider this code:
 %
 \begin{verbatim}
@@ -117,7 +117,7 @@ With modern semantics it prints:
 This can result in subtle but nasty differences, if you are unaware of this
 "feature",
 
-As Ron Shepard explains on Fortran discourse:
+As Ron Shepard explains on Fortran discourse \cite{F66Explanation}:
 
 \begin{quote}
 F66 do loops were not directly or specifically required to execute once, rather the
@@ -152,7 +152,7 @@ did not exist until f77. 2) List-directed i/o did not exist until f77. 3) The us
 specify the default output logical unit was not defined until f77.
 \end{quote}
 
-Some compilers still provide an option to allow for the FORTRAN 66 semantics,\cite{Intel}
+Some compilers still provide an option to allow for the FORTRAN 66 semantics, \cite{F66DoLoops}
 which includes this feature:\footnote{I could not find such a flag for the
 gfortran compiler, but for Intel Fortran oneAPI it is -f66.}
 
@@ -246,8 +246,6 @@ whether you can actually check it at the start of the loop, as with a \verb+DO W
 or whether you require some preliminary calculation first. If you want to convert
 old-style source code, beware that the logic may sometimes have to be reverted,
 particularly if the condition comes at the end of the loop.
-
-\emph{Note for self: https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2023-0/f66.html}
 
 
 \subsection{Three-way IF statements and computed GOTOs}
@@ -363,10 +361,9 @@ end subroutine print_sqrt
 distinguish the error handling from the normal handling. It does not influence
 in this form the flow of control.
 
-
-\emph{Note to self: http://www.u.arizona.edu/\~rubinson/copyright\_violations/Go\_To\_Considered\_Harmful.html
-Reprinted from Communications of the ACM, Vol. 11, No. 3, March 1968, pp. 147-148. Copyright (c) 1968, Association for Computing Machinery, Inc.
-}
+\emph{Note:} GOTO statements have been frowned upon for a long time \cite{GOTOHarmful}.
+But when used in a disciplined and sparse manner, they can actually clarify the flow of control.
+In programming, very few statements have absolute truth. (Well, except \verb+a = .true.+ of course.)
 
 
 \subsection{The ASSIGN statement}
@@ -435,7 +432,7 @@ a "dynamic" jump can be constructed -- the part after statement label 900
 is actually independent of whatever happens above it. You can extend it with
 new cases, without having to worry about the computational part.
 
-\subsubsection{The DO-loop with a real index variable}
+\subsection{The DO-loop with a real index variable}
 A peculiar feature of FORTRAN 77 was the introduction of a DO-loop gouverned
 by a real variable. This means that the precise values of the variable might
 influnce the number of iterations, for instance. A simple program to

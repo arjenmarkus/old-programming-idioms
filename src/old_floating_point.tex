@@ -103,6 +103,72 @@ carefully check the code.\footnote{In general, using these compile options is
 considered a bad idea. It is all too easy to forget them when building the program or library.}
 
 
+\subsection{Retrieving properties of the floating-point arithmetic}
+Quite often in robust numerical algorithms, like calculating special functions (Bessel, gamma, ...), it is necessary
+to know the properties of the floating-point system the program uses, such as the smallest
+or the largest value that can be represented. In Fortran there are various intrinsic functions
+that allow this information to be queried, but in FORTRAN that was not standardised. Also,
+the floating-point systems differed a great deal more than they do nowadays. To solve that,
+functions called \verb+R1MACH+, \verb+D1MACH+ and even \verb+I1MACH+ were used that returned
+the required information. They sometimes had to be adapted to the machine you were working
+on, as indicated in the comments of \verb+R1MACH+:
+
+\begin{verbatim}
+      REAL FUNCTION R1MACH(I)
+      INTEGER I
+C
+C  SINGLE-PRECISION MACHINE CONSTANTS
+C  R1MACH(1) = B**(EMIN-1), THE SMALLEST POSITIVE MAGNITUDE.
+C  R1MACH(2) = B**EMAX*(1 - B**(-T)), THE LARGEST MAGNITUDE.
+C  R1MACH(3) = B**(-T), THE SMALLEST RELATIVE SPACING.
+C  R1MACH(4) = B**(1-T), THE LARGEST RELATIVE SPACING.
+C  R1MACH(5) = LOG10(B)
+C
+      INTEGER SMALL(2)
+      INTEGER LARGE(2)
+      INTEGER RIGHT(2)
+      INTEGER DIVER(2)
+      INTEGER LOG10(2)
+C     needs to be (2) for AUTODOUBLE, HARRIS SLASH 6, ...
+      INTEGER SC
+      SAVE SMALL, LARGE, RIGHT, DIVER, LOG10, SC
+      REAL RMACH(5)
+      EQUIVALENCE (RMACH(1),SMALL(1))
+      EQUIVALENCE (RMACH(2),LARGE(1))
+      EQUIVALENCE (RMACH(3),RIGHT(1))
+      EQUIVALENCE (RMACH(4),DIVER(1))
+      EQUIVALENCE (RMACH(5),LOG10(1))
+      INTEGER J, K, L, T3E(3)
+      DATA T3E(1) / 9777664 /
+      DATA T3E(2) / 5323660 /
+      DATA T3E(3) / 46980 /
+C  THIS VERSION ADAPTS AUTOMATICALLY TO MOST CURRENT MACHINES,
+C  INCLUDING AUTO-DOUBLE COMPILERS.
+C  TO COMPILE ON OLDER MACHINES, ADD A C IN COLUMN 1
+C  ON THE NEXT LINE
+      DATA SC/0/
+C  AND REMOVE THE C FROM COLUMN 1 IN ONE OF THE SECTIONS BELOW.
+C  CONSTANTS FOR EVEN OLDER MACHINES CAN BE OBTAINED BY
+C          mail netlib@research.bell-labs.com
+C          send old1mach from blas
+C  PLEASE SEND CORRECTIONS TO dmg OR ehg@bell-labs.com.
+C
+C     MACHINE CONSTANTS FOR THE HONEYWELL DPS 8/70 SERIES.
+C      DATA RMACH(1) / O402400000000 /
+C      DATA RMACH(2) / O376777777777 /
+C      DATA RMACH(3) / O714400000000 /
+C      DATA RMACH(4) / O716400000000 /
+C      DATA RMACH(5) / O776464202324 /, SC/987/
+       ...
+\end{verbatim}
+
+These functions were carefully constructed as were the algorithms that used
+them. In this day and age, almost all such variation in the properties of
+floating-point numbers has been eliminated via the adoption of the IEEE standard.
+That does not mean of course that floating-point arithmetic holds no surprises
+anymore. (One classic text on the subject is
+
+
 \subsection{Input in the absence of a decimal point}
 Disk storage nowadays is all but endless, but this luxury did not exist in the old days.
 This may have been the reason for a little known or used feature in the input of real numbers:

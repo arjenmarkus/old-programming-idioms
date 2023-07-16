@@ -45,20 +45,29 @@ even though it is contained in a \verb+COMMON+ block (see section \ref{blockdata
 \item
 The code is written in lower-case. Strictly speaking that is not conforming to the standard.
 \item
-The array \verb+messg+ in turn is passed onto another routine, \verb+seterr+, but the code
-for that routine simple prints "Error!" and we are not shown how to deal with the integer
-array that holds the character string.
+The array \verb+messg+ in turn is passed onto another routine, \verb+seterr+ and in the end
+the characters stored in the integer array are written via an \verb+A+ format:
+\begin{verbatim}
+c
+c  set up the format for printing the error message.
+c  the format is simply (a1,14x,72axx) where xx=i1mach(6) is the
+c  number of characters stored per integer word.
+c
+      data ccplus  / 1h+ /
+c
+      data fmt( 1) / 1h( /
+      data fmt( 2) / 1ha /
+      ...
+\end{verbatim}
 \end{itemize}
 
 Modernising holleriths that only serve as static strings is simple: turn them into ordinary
 strings. However, sometimes they were used to manipulate string data and then you need
 to understand exactly what is going on, especially because vendor-specific methods were
-typically used and the storage of hollerith constants was non-portable \cite{hollerith}.
-
-\emph{Note to self: https://en.wikipedia.org/wiki/Hollerith\_constant}
+typically used and the storage of hollerith constants was non-portable \cite{HollerithConstant}.
 
 An example of manipulating character strings pre-FORTRAN~77 is given here, shamelessly
-copied from a Fortran discourse thread. The code fragment uses compiler-specific
+copied from a Fortran discourse thread \cite{BafflingCode}. The code fragment uses compiler-specific
 statements \verb+DECODE+ and \verb+ENCODE+ to move characters to and from integers:
 \begin{verbatim}
       CHARACTER S*6 / '987654' /, T*6
@@ -82,9 +91,6 @@ The above program has this output:
 The DECODE reads the characters of S as 3 integers, and stores them into V(1), V(2), and V(3).
 The ENCODE statement writes the values V(3), V(2), and V(1) into T as characters; T then contains '547698'.
 \end{quote}
-
-
-\emph{Note to self: https://fortran-lang.discourse.group/t/code-that-baffles-me-could-someone-please-explain/6005}
 
 
 \subsection{Fixed-length character arguments}
