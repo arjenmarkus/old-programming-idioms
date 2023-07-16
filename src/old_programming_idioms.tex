@@ -39,6 +39,7 @@ useful enough.
 \input{old_control_structures}
 \input{old_memory_management}
 \input{old_input_output}
+\input{old_miscellaneous}
 \input{old_caveats_for_c_programmers}
 
 
@@ -50,23 +51,23 @@ useful enough.
    - memory management
    - tools like source code control systems
    - connections between computers, Internet
-- command-line arguments for file names
 - numerical binary representations versus IEEE (IBM, Cray, Convex)
 - list-directed input and output - also: /
 - narrow formats (?)
 - use of d00 in input
-- Cray pointers
 - external, also notation "*tan"
 - FORTRAN 66 semantics: OPEN - STATUS = 'NEW' as default.
 - Effect of BLANK = 'ZERO' versus BLANK = 'NULL'
-- Equating logicals: logical x, y; if ( x .eq. y ) then
-- r1mach and friends
-- Declaring an argument to be a scalar but using it as an array
 - character*1 a*2
 \end{verbatim}
 
 Done:
 \begin{verbatim}
+- command-line arguments for file names
+- Cray pointers
+- Equating logicals: logical x, y; if ( x .eq. y ) then
+- Declaring an argument to be a scalar but using it as an array
+- r1mach and friends
 - intent
 - checking interfaces
 - equivalence
@@ -116,5 +117,5 @@ The ENCODE statement writes the values V(3), V(2), and V(1) into T as characters
 References to be added: IEEE 754 and Fortran 90 standard.
 
 \bibliography{old_idioms}
-\bibliographystyle{plain}
+\bibliographystyle{IEEEtran}
 \end{document}

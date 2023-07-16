@@ -113,6 +113,11 @@ C
       WRITE(*,*) 'Value is: ', B
 \end{verbatim}
 
+With Fortran, however, you can use the \verb+transfer()+ function to
+convert the integer to a sequence of four individual characters or
+simply use the bit manipulation functions to extract the information.
+
+
 \subsection{The SAVE statement}
 According to the FORTRAN standard a local variable in a function or
 subroutine does not retain its value between calls, unless it has the

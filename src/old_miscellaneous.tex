@@ -1,0 +1,91 @@
+\section{Miscellaneous topics}
+Not all FORTRAN topics that might be useful to explain fit into the previous sections.
+Therefore, this section describes some left-overs: Cray pointers, reading from and writing to
+unopened files and so on.
+
+\subsection{Cray pointers}
+An extension that gained some popularity beyond the original compiler for which it was introduced
+is the so-called Cray pointer. It is a device to work with C-like pointers in FORTRAN, enabling
+it to take advantage of the memory address. A useful aspect is that it enables you to deal
+with pointers to functions or subroutines in a way that was not possible with standard FORTRAN.
+
+Here is a small example, take from the gfortran documentation \cite{F77Cray}:
+\begin{verbatim}
+      IMPLICIT NONE
+      EXTERNAL SUB
+      POINTER (SUBPTR,SUBPTE)
+      EXTERNAL SUBPTE
+      SUBPTR = LOC(SUB)
+      CALL SUBPTE()
+      [...]
+      SUBROUTINE SUB
+      [...]
+      END SUBROUTINE SUB
+\end{verbatim}
+
+The statement \verb+POINTER( ... )+ links an integer \verb+SUBPTR+ to the address of a subroutine
+\verb+SUBPTE+ (recognised as such by the \verb+EXTERNAL+ statement). It receives the actual
+address of a subroutine \verb+SUB+ via the non-standard \verb+LOC()+ function. \verb+SUBPTE+ can then
+be used instead of \verb+SUB+.
+
+With this feature you could load a dynamic library (DLL, dylib or SO) and pass the pointers to the
+routines around. With Fortran you can use procedure pointers instead, with the added benefit that
+they can be given explicit signatures.
+
+\subsection{Comparing logicals}
+Logical variables have been part of the FORTRAN standard for a long time and they come with a full
+set of logical operations. Comparing their values is done via the \verb+.EQV.+ or \verb+.NEQV.+ operations.
+Some compilers, however, allow you to use \verb+.EQ.+ instead as well (see \verb+equiv.f+).
+
+The following code is rejected by the gfortran compiler but accepted by Intel Fortran oneAPI:
+\begin{verbatim}
+      SUBROUTINE CHECK( A, B )
+      LOGICAL A, B
+
+      WRITE(*,*) 'A = ', A
+      WRITE(*,*) 'B = ', B
+      IF ( A .EQ. B ) THEN
+          WRITE(*,*) 'A and B are equal'
+      ELSE
+          WRITE(*,*) 'A and B are NOT equal'
+      ENDIF
+\end{verbatim}
+
+You should \emph{always} use \verb+.eqv.+ and \verb+neqv.+ for this sort of things, because of
+portability but also because you do not know how the actual logical values are represented \cite{DrFortranEquiv}.
+
+
+\subsection{Reading from and writing to unopened files}
+Input and output in FORTRAN (and Fortran) is quite liberal: you do not have to open a file. IF you write to
+a file that was not opened, then the program will create a file with a name like \verb+fort.88+, where 88
+is the logical unit number you happen to write to. The actual name of the file that is thus created
+depends on the compiler, so you cannot rely on this too much, especially when reading from a file
+you did not open explicitly.
+
+A very old compiler, the MicroSoft FORTRAN Powerstation compiler, would use a very different scheme:
+it would use command-line arguments in the order in which they were needed in the program, as the
+names for these unopened files.
+
+As logical unit numbers are a shared, global, resource, it was not uncommon to get conflicts: a library
+that wants to read or write to a file must acquire a unique number for its own use. Therefore, quite
+often a routine would loop over a range of valid unit numbers to see which one was free (using the \verb+INQUIRE+
+statement) and then claim it for its own:
+\begin{verbatim}
+      LOGICAL OPENED
+      INTEGER I, LUN
+
+      LUN = -1
+      DO 110 I = 10,100
+          INQUIRE( I, OPENED = OPENED )
+
+          IF ( .NOT. OPENED ) THEN
+              LUN = I
+              GOTO 120
+          ENDIF
+  11  CONTINUE
+  120 CONTINUE
+\end{verbatim}
+
+With the \verb+newunit=+ keyword to the \verb+open+ statement such constructions are no longer required.
+It can be handy though to write debug output to some "anonymous" file, as you do not have to worry
+about opening it only once and saving the unit number then.
