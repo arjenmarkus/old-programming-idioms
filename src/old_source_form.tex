@@ -141,10 +141,7 @@ It is a rather awkward form of "preprocessing":
 \begin{itemize}
 \item
 It is a compiler extension or at least not supported by all compilers. The now deprecated g77 compiler acknowledged
-the existence of such lines, but provided no facilities.
-
-\emph{Note to self: https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Debug-Line.html
-}
+the existence of such lines, but provided no facilities \cite{F77DLine}.
 \item
 It is not available for free form source.
 \item
@@ -194,7 +191,7 @@ depends on the compiler, as well as what you can do with them. There are also co
 are defined as a standard, like the \emph{OpenMP} directives.\footnote{Compiler directives have their
 equivalent in C. There they are called pragmas and work in much the same way.}
 
-Here is one example: an implicit way to redefine the default precision for real variables:
+Here is one example: an implicit way to redefine the default precision for real variables \cite{IntelRealDirective}:
 
 \begin{verbatim}
 C For the Intel Fortran compiler:
@@ -211,13 +208,6 @@ C For the gfortran compiler:
 \end{verbatim}
 
 The gfortran compiler supports loop unrolling and with this directive you control how this is done.
-
-\emph{Note to self:}
-
-https://gcc.gnu.org/onlinedocs/gfortran/UNROLL-directive.html
-
-https://www.intel.com/content/www/us/en/docs/fortran-compiler/developer-guide-reference/2023-0/real-directive.html\#GUID-38B61FE4-4058-497A-9AAA-2AF1BB56C178
-
 
 Since these directives come with a specific compiler, you will need to check the documentation of
 the program or, more generally perhaps, the favoured compiler to see what the meaning is. It is not

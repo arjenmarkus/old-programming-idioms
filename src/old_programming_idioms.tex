@@ -43,7 +43,7 @@ useful enough.
 \input{old_caveats_for_c_programmers}
 
 
-\section{Subjects}
+\section{Subjects still to cover}
 \begin{verbatim}
 - array(*) versus array(:)
 - history of computers:
@@ -56,65 +56,64 @@ useful enough.
 - narrow formats (?)
 - use of d00 in input
 - external, also notation "*tan"
+- EXTERNAL for an intrinsic procedure
 - FORTRAN 66 semantics: OPEN - STATUS = 'NEW' as default.
 - Effect of BLANK = 'ZERO' versus BLANK = 'NULL'
 - character*1 a*2
 \end{verbatim}
 
-Done:
-\begin{verbatim}
-- command-line arguments for file names
-- Cray pointers
-- Equating logicals: logical x, y; if ( x .eq. y ) then
-- Declaring an argument to be a scalar but using it as an array
-- r1mach and friends
-- intent
-- checking interfaces
-- equivalence
-- big-endian and little-endian
-- double complex
-- double precision versus kind
-- temporary arrays - non-contiguous arrays
-- six characters
-- constants as actual arguments
-- fixed form and spaces
-- array(10) as the starting point
-- implicit types
-- separate compilations, the misunderstanding of one routine per file
-- LU-numbers 5 and 6 (and 7)
-- standard input and output
-- real do-variables
-- entry
-- statement functions
-- unformatted versus binary files
-- uppercase/lowercase letters
-- D as comment character
-- Specific names for functions like max() and sin()
-- Alternate return
-- Hollerith
-- DECODE/ENCODE:
-
-From discourse: (19 june 2023)
-   CHARACTER S*6 / '987654' /, T*6
-   INTEGER V(3)*4
-   DECODE( 6, '(3I2)', S ) V
-   WRITE( *, '(3I3)') V
-   ENCODE( 6, '(3I2)', T ) V(3), V(2), V(1)
-   PRINT *, T
-   END
-
-The above program has this output:
-
-98 76 54
-547698
-
-The DECODE reads the characters of S as 3 integers, and stores them into V(1), V(2), and V(3).
-The ENCODE statement writes the values V(3), V(2), and V(1) into T as characters; T then contains '547698'.
-
-\end{verbatim}
-
-
-References to be added: IEEE 754 and Fortran 90 standard.
+%Done:
+%\begin{verbatim}
+%- command-line arguments for file names
+%- Cray pointers
+%- Equating logicals: logical x, y; if ( x .eq. y ) then
+%- Declaring an argument to be a scalar but using it as an array
+%- r1mach and friends
+%- intent
+%- checking interfaces
+%- equivalence
+%- big-endian and little-endian
+%- double complex
+%- double precision versus kind
+%- temporary arrays - non-contiguous arrays
+%- six characters
+%- constants as actual arguments
+%- fixed form and spaces
+%- array(10) as the starting point
+%- implicit types
+%- separate compilations, the misunderstanding of one routine per file
+%- LU-numbers 5 and 6 (and 7)
+%- standard input and output
+%- real do-variables
+%- entry
+%- statement functions
+%- unformatted versus binary files
+%- uppercase/lowercase letters
+%- D as comment character
+%- Specific names for functions like max() and sin()
+%- Alternate return
+%- Hollerith
+%- DECODE/ENCODE:
+%
+%From discourse: (19 june 2023)
+%   CHARACTER S*6 / '987654' /, T*6
+%   INTEGER V(3)*4
+%   DECODE( 6, '(3I2)', S ) V
+%   WRITE( *, '(3I3)') V
+%   ENCODE( 6, '(3I2)', T ) V(3), V(2), V(1)
+%   PRINT *, T
+%   END
+%
+%The above program has this output:
+%
+%98 76 54
+%547698
+%
+%The DECODE reads the characters of S as 3 integers, and stores them into V(1), V(2), and V(3).
+%The ENCODE statement writes the values V(3), V(2), and V(1) into T as characters; T then contains '547698'.
+%
+%\end{verbatim}
+%
 
 \bibliography{old_idioms}
 \bibliographystyle{IEEEtran}

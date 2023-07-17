@@ -7,15 +7,66 @@ some compilers could implement these checks at run-time. It was also used someti
 to allow for flexibility. For instance: if you do not care if an array holds integers
 or reals, because you are simply writing them to some binary file, then one
 routine would suffice to take care of both types (perhaps even including double
-precision numbers).
+precision numbers; see \verb+twritearray.f+):
 
-NOTE: example
+\begin{verbatim}
+      PROGRAM WRITAR
+      INTEGER IARR(10)
+      REAL    RARR(10)
+      INTEGER I
+
+      OPEN( 10, FILE = 'writar.out', FORM = 'UNFORMATTED' )
+
+      DO 110 I = 1,10
+          IARR(I) = I
+          RARR(I) = 0.1 * I
+  110 CONTINUE
+
+      CALL WRTDAT( IARR, 10 )
+      CALL WRTDAT( RARR, 10 )
+
+      CLOSE( 10 )
+
+      END
+
+      SUBROUTINE WRTDAT( ARRAY, NOELEM )
+      INTEGER ARRAY(NOELEM)
+
+      WRITE(10) ARRAY
+
+      END
+\end{verbatim}
+
+Modern compilers will complain about the two types of arrays that are passed to
+the routine, so you would have to go out of your way to get a program that is                                  f
+actually accepted.
 
 A more common situation: allow one-dimensional arrays to be used as two-dimensional
 or pass scalars to array dummy arguments. As long as you remain with the allotted
-memory, there should be no problem.
+memory, there should be no problem (see \verb+twodarray.f+).
 
-NOTE: example
+\begin{verbatim}
+      PROGRAM TWODAR
+      REAL    RARR(10)
+
+      CALL TWOD( RARR, 2, 5 )
+
+      END
+
+      SUBROUTINE TWOD( ARRAY, N1, N2 )
+      REAL ARRAY(N1,N2)
+
+      INTEGER I, J
+
+      DO 120 J = 1,N2
+          DO 110 I = 1,N1
+              ARRAY(I,J) = I + J
+  110     CONTINUE
+  120 CONTINUE
+
+      END
+\end{verbatim}
+
 
 \subsection{Passing arrays}
 \label{passingarrays}
@@ -189,8 +240,6 @@ procedures (see \verb+integral.f+):
 Note that the declaration of \verb+INTGRL+ as a \emph{real} function is required
 because the implicit typing rules would otherwise make it an integer, with very
 strange results.
-
-NOTE: EXTERNAL for an intrinsic procedure
 
 
 \subsection{Statement functions}

@@ -5,6 +5,19 @@ languages. This section is meant to at least point out a few such features. It i
 from complete. Since many of these features are common to both FORTRAN and Fortran, I will use the
 word Fortran in this section to mean both versions.
 
+\subsection{Reserved words and keywords}
+There are no reserved words in Fortran, even though there are numerous keywords. Thus,
+the following code is perfectly okay, even if you should shun this liberal use of names that
+are usually keywords:
+
+\begin{verbatim}
+continue:
+    do do = 1,enddo
+        if ( if(do) .eq. endif ) then = else
+    enddo continue
+\end{verbatim}
+
+
 \subsection{Terminology and semantics}
 Fortran uses the term \emph{argument} to indicate the variables that are passed to and from
 subprograms, where C uses the term \emph{parameter}. A \emph{parameter} in Fortran, however,
@@ -14,7 +27,7 @@ Another thing to watch out for is that a \emph{pointer} in Fortran is not merely
 address, as it is in C. A Fortran pointer holds far more information and it can only point
 to variables that are either themselves pointers or have the \emph{target} attribute.
 
-In C assignment, \verb+a = b+, is actually an operator. In Fortran, it is a statement and
+In C assignment, \verb+a = b+ is actually an operator. In Fortran, it is a statement and
 therefore cannot be put into a combination like: \verb+a = b = c+.
 
 \subsection{Subroutines and functions}
@@ -42,7 +55,7 @@ In C code like:
      }
 \end{verbatim}
 
-is simply a short-hand for:
+\noindent is simply a short-hand for:
 \begin{verbatim}
      int f( int x ) {
          int y ;
@@ -60,7 +73,7 @@ called.
 
 The Fortran code that \emph{looks} like exactly this:
 \begin{verbatim}
-     integer function f( x ) {
+     integer function f( x )
          integer, intent(in) :: x
 
          integer y = 1
@@ -109,7 +122,7 @@ In contrast, Fortran uses strings of a defined length and pads strings with spac
      a = '123'
 \end{verbatim}
 
-\noindent means that the \verb+a+ has the value '123_______' (where '_' is used to indicate a space).
+\noindent means that the \verb+a+ has the value \verb+'123_______'+ (where \verb+'_'+ is used to indicate a space).
 
 This makes programming with strings a lot easier as you can simply rely on the compiler to make
 sure that strings fit into the allotted memory:
@@ -126,5 +139,5 @@ sure that strings fit into the allotted memory:
      write(*,*) c
 \end{verbatim}
 
-\noindent will print the string '1234567890abcde', without any concern for the fact that \verb+a // b+
+\noindent will print the string \verb+'1234567890abcde'+, without any concern for the fact that \verb+a // b+
 is longer than the variable \verb+c+ can hold.
