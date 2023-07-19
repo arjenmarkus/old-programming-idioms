@@ -38,17 +38,19 @@ very often the C conventions are used.
 The original fixed form for FORTRAN sources has at least the following curiosities:
 \begin{itemize}
 \item
-In the columns 1 to 5 you can only put comments, if the first character is a comment character ("C" or "*"),
-or statement labels.
+Any character in the first column indicates that the line is a comment.
+Common conventions where to use the characters "!", "C", or "*".
 \item
-The sixth column is reserved to indicate that the previous line is continued:
+Columns 2 through 5 are reserved for statement labels.
+\item
+Any character in the sixth column indicates that the previous line is continued:
 \begin{verbatim}
 *234567890
       WRITE(*,*) 'A long sentence that spans over two',
      &           'or more lines'
 \end{verbatim}
-The continuation character, in the above the "\&", can actually be any character with the exception of
-a zero (0). Some programmers would use digits, so that you can easily count the number of lines.
+The most common convention was to use the "\&". The "*" was not uncommon either.
+Some programmers would use digits, so that you can easily count the number of lines.
 \item
 The columns 7 to 72 were used for the actual code.
 \item
