@@ -43,7 +43,7 @@ Common conventions where to use the characters "!", "C", or "*".
 \item
 Columns 2 through 5 are reserved for statement labels.
 \item
-Any character in the sixth column indicates that the previous line is continued:
+Any non-blank character in the sixth column (other than "0") indicates that the previous line is continued:
 \begin{verbatim}
 *234567890
       WRITE(*,*) 'A long sentence that spans over two',
