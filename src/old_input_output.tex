@@ -103,6 +103,30 @@ terminal was the dollar sign:
 
 The dollar sign meant that the cursor should stay on the last written line.
 
+An alternative to the dollar sign was the backslash with the same meaning, at least
+in compilers that supported that.
+
+
+\subsection*{Positioning the pointer within a record}
+Formats can be used to control the reading and writing of data in more ways than merely
+specifying the numerical format or how many spaces to add. The "tab" edit descriptor
+allows you to go to any position you like, including a previous position. Consider
+this example:
+
+\begin{verbatim}
+     WRITE(6,'(A,T1,A)') 'Write a number', 'Read it'
+\end{verbatim}
+
+The "T1" edit descriptor set the position for the next item in an absolute fashion.
+The statement writes the first string and then immediately afterwards overwrites the first
+seven characters, so that the result is:
+
+\begin{verbatim}
+Read it number
+\end{verbatim}
+
+It is a feature that is not often encountered, but it is still part of the current standard.
+
 
 \subsection{Direct-access files}
 By default, direct-access files are unformatted -- values are dumped to the file or retrieved

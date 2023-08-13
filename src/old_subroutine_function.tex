@@ -396,3 +396,54 @@ the actual call has the right number of statement labels in the interface. In mo
 a simple return code works quite as well (the section \ref{jumpingtoend} offers more
 on the subject).
 
+
+\subsection{An exotic function -- CHARACTER*(*)}
+While in FORTRAN you can pass a character string of any length to a subroutine or function,
+via \verb+CHARACTER*(*)+, returning a string of any length is more problematic. The signature
+of such a function is:
+
+\begin{verbatim}
+      CHARACTER*(*) FUNCTION name( arg1, arg2, ... )
+\end{verbatim}
+
+\noindent but the actual length is not determined by that function itself. Instead it is
+determined by the \emph{calling} program unit. This is illustrated in the example below:
+(see also \verb+charfunc.f+):
+
+\begin{verbatim}
+      PROGRAM CHARF
+
+      EXTERNAL     DOUBLE
+      CHARACTER*10 DOUBLE
+
+      CHARACTER*3  STRING
+
+      STRING = 'ABC'
+      WRITE(6,'(3A)') 'Double a string: >>', DOUBLE(STRING), '<<'
+      END
+
+      CHARACTER*(*) FUNCTION DOUBLE( STRING )
+      CHARACTER*(*) STRING
+
+      DOUBLE = STRING // STRING
+
+      END
+\end{verbatim}
+
+\noindent with the result, note the trailing blanks:
+\begin{verbatim}
+Doube a string: >>ABCABC    <<
+\end{verbatim}
+
+Within Fortran, we can of course define this function as:
+\begin{verbatim}
+function double( string )
+    character(len=*)             :: string
+    character(len=2*len(string)) :: double
+
+    double = string // string
+end function double
+\end{verbatim}
+
+It is an odd construction, as another program unit is in control of what is actually returned.
+(As far as I know there is no other example and that is a comforting thought.)
