@@ -38,10 +38,16 @@ very often the C conventions are used.
 The original fixed form for FORTRAN sources has at least the following curiosities:
 \begin{itemize}
 \item
-Any non-blank character in the first column indicates that the line is a comment.
-Common conventions were to use the characters "!", "C", or "*".
+Lines are interpreted a comments if the character in column 1 is a "C" or a "*".
+A common extension is the use of "D" to mark "debug" statements (see below).
+
+From the Fortran standard onwards, an exclamation mark, "!", indicates the rest of the line
+is a comment -- unless it appears inside a literal string.
+
+(Some FORTRAN 66 compilers allowed the use of any non-numeric character in the first column
+to mean a comment, but that is definitely not allowed since the FORTRAN 77 standard.)
 \item
-Columns 2 through 5 are reserved for statement labels.
+Columns 1 through 5 are reserved for numerical statement labels. Any positive number will do.
 \item
 Any non-blank character in the sixth column (other than "0") indicates that the previous line is continued:
 \begin{verbatim}
@@ -245,4 +251,4 @@ files into a library, because all the little subroutines and functions are in in
 With the modules we have nowadays it is much easier to manage the routines. You can hide the ones
 that are not intended for outside use (so their names cannot cause trouble) and you can store
 the routines that functionally belong together in one and the same module, or organise the code
-in submodules.
+in submodules. Alternatively, to split a large source file into smaller pieces, you can use the INCLUDE statement.

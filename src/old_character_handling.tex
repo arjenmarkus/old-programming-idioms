@@ -7,7 +7,7 @@ work with strings of dynamically allocatable lengths.
 
 
 \subsection{Hollerith constants}
-The main use you are likely to encounter of hollerith constants is in format statements or
+The main use you are likely to encounter of hollerith constants is in DATA statements, format statements or
 as constant strings passed to a subroutine. Here is
 a code fragment from a library for special functions, like the Bessel functions and
 many others:
@@ -91,6 +91,11 @@ The above program has this output:
 The DECODE reads the characters of S as 3 integers, and stores them into V(1), V(2), and V(3).
 The ENCODE statement writes the values V(3), V(2), and V(1) into T as characters; T then contains '547698'.
 \end{quote}
+
+Actually, originally the use of holleriths was limited to DATA statements
+and actual arguments to routine calls. The actual storage of these constants
+depended on the computer system in question and could lead to all manner of
+complicated manipulations.
 
 
 \subsection{Fixed-length character arguments}

@@ -241,6 +241,11 @@ Note that the declaration of \verb+INTGRL+ as a \emph{real} function is required
 because the implicit typing rules would otherwise make it an integer, with very
 strange results.
 
+Nowadays, you should use a module to implement the functions or if that is
+not possible, as in the case of general library that provides an integration
+function, you can define the \emph{interface} to function \verb+A+ via a module.
+
+[TODO: example]
 
 \subsection{Statement functions}
 Short functions like the function \verb+A+ in the previous section can also be
@@ -356,6 +361,11 @@ As the \verb+ENTRY+ statement only defines the name and the argument list, it se
 if its corresponding program unit is a subroutine or as a function of the same type. Its argument list
 can, however, differ.
 
+The modern alternative is to use a module and module variables to store the intermediate results.
+Via procedure overloading you can define different argument lists.
+
+[TODO: example]
+
 
 \subsection{Alternate returns}
 A deprecated feature in Fortran, alternate returns provide a means to
@@ -447,3 +457,33 @@ end function double
 
 It is an odd construction, as another program unit is in control of what is actually returned.
 (As far as I know there is no other example and that is a comforting thought.)
+
+An alternative is to define the return value as an allocatable length string:
+
+\begin{verbatim}
+function double( string )
+    character(len=*)              :: string
+    character(len=:), allocatable :: double
+
+    !
+    ! Allocate the required string or trust automatic reallocation
+    !
+    allocate( character(len=2*len(string)):: double )
+
+    double = string // string
+end function double
+\end{verbatim}
+
+Some remarks about the above example:
+\begin{itemize}
+\item
+As the function has an allocatable return value, the interface needs to be explicit to use it properly.
+Contain it in a module.
+\item
+With automatic reallocation the left-hand side does not need to be explicitly allocated. So the \verb+allocate+
+statement can be left out. One advantage of explicitly allocating it is that you can check for a problem.
+\item
+Both the automatic-length and the allocatable-length solutions are valid, but if you need to return
+a large amount of data, you may run out of stack space, with no possibility to check this. The explicit
+allocation does allow that.
+\end{itemize}
